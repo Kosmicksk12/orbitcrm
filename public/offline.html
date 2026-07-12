@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Sin conexión · OrbitCRM</title>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    body {
+      display: flex; align-items: center; justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+      background: #EEF1F6; color: #101828; text-align: center; padding: 24px;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { background: #0B1220; color: #E7EAF3; }
+    }
+    .card { max-width: 320px; }
+    .badge {
+      width: 48px; height: 48px; border-radius: 16px; background: #3B45F0; color: #fff;
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+      font-weight: 700; font-size: 20px;
+    }
+    h1 { font-size: 18px; margin: 0 0 8px; }
+    p { font-size: 14px; color: #5B6478; margin: 0; }
+    @media (prefers-color-scheme: dark) { p { color: #8C97B3; } }
+    button {
+      margin-top: 20px; background: #3B45F0; color: #fff; border: none; border-radius: 12px;
+      padding: 10px 20px; font-size: 14px; font-weight: 500; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge">O</div>
+    <h1>Estás sin conexión</h1>
+    <p>Esta página aún no está disponible sin internet. Revisa tu conexión e inténtalo de nuevo.</p>
+    <button onclick="location.reload()">Reintentar</button>
+  </div>
+</body>
+</html>

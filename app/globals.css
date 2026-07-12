@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-bg text-ink dark:bg-bg-dark dark:text-ink-dark antialiased;
+    font-family: var(--font-sans), system-ui, sans-serif;
+    /* Respect the iPhone notch/home-indicator safe areas when running
+       standalone (installed) so content never sits under the system UI. */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display), system-ui, sans-serif;
+  }
+
+  /* Visible keyboard focus everywhere — accessibility floor. */
+  :focus-visible {
+    outline: 2px solid theme("colors.accent.DEFAULT");
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: theme("colors.accent.100");
+    color: theme("colors.accent.700");
+  }
+
+  /* Thin, quiet scrollbars that match the control-room aesthetic. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: theme("colors.line.DEFAULT") transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: theme("colors.line.DEFAULT");
+    border-radius: 8px;
+  }
+  .dark *::-webkit-scrollbar-thumb {
+    background: theme("colors.line.dark");
+  }
+}
+
+@layer utilities {
+  .skeleton {
+    @apply bg-line/60 dark:bg-line-dark/60 rounded-md;
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.5),
+      transparent
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.6s linear infinite;
+  }
+  .dark .skeleton {
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.06),
+      transparent
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Printable documents (e.g. warranty tickets): hide all app chrome
+   (sidebar, topbar, mobile nav, buttons) and print only the element
+   marked .print-area, full width, no shadows/backgrounds. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  html, body {
+    background: #fff !important;
+  }
+  .print-area {
+    display: block !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
