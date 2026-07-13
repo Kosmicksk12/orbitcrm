@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/ui/Logo";
 import {
   IconBox,
   IconDashboard,
@@ -25,9 +26,7 @@ export function Sidebar() {
   return (
     <aside className="no-print hidden w-64 shrink-0 border-r border-line bg-surface dark:border-line-dark dark:bg-surface-dark md:flex md:flex-col">
       <div className="flex h-16 items-center gap-2.5 px-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent font-display text-sm font-bold text-white">
-          O
-        </div>
+        <Logo size={32} />
         <span className="font-display text-lg font-semibold tracking-tight text-ink dark:text-ink-dark">
           OrbitCRM
         </span>

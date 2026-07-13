@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Primitives";
+import { Logo } from "@/components/ui/Logo";
 import { IconLogout, IconSettings } from "@/components/ui/Icons";
 import { QuickPartsSearch } from "@/components/inventory/QuickPartsSearch";
 
@@ -36,9 +37,7 @@ export function Topbar({ userEmail, userName }: { userEmail: string; userName: s
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <div className="flex items-center gap-2 md:hidden">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent font-display text-sm font-bold text-white">
-          O
-        </div>
+        <Logo size={32} />
         <span className="font-display text-base font-semibold text-ink dark:text-ink-dark">
           OrbitCRM
         </span>

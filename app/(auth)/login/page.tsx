@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input, FieldWrapper } from "@/components/ui/Field";
+import { Logo } from "@/components/ui/Logo";
 import { isValidEmail } from "@/lib/utils";
 
 type Mode = "sign-in" | "sign-up";
@@ -75,9 +76,7 @@ function LoginForm() {
     <div className="flex min-h-dvh items-center justify-center bg-bg px-4 dark:bg-bg-dark">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-3 text-center">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent font-display text-lg font-bold text-white">
-            O
-          </div>
+          <Logo size={44} />
           <div>
             <h1 className="font-display text-2xl font-semibold text-ink dark:text-ink-dark">
               OrbitCRM
