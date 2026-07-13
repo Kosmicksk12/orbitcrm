@@ -11,9 +11,10 @@ import { EmptyState, ErrorState, SkeletonRow } from "@/components/ui/States";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ProductForm, type ProductFormValues } from "./ProductForm";
 import { ImportExcelModal } from "./ImportExcelModal";
-import { IconAlertTriangle, IconBox, IconEdit, IconPlus, IconSearch, IconTrash, IconUpload } from "@/components/ui/Icons";
+import { IconAlertTriangle, IconBox, IconDownload, IconEdit, IconPlus, IconSearch, IconTrash, IconUpload } from "@/components/ui/Icons";
 import type { InventoryProduct } from "@/lib/types";
 import { cn, formatCurrency } from "@/lib/utils";
+import { exportToExcel } from "@/lib/export";
 
 export function InventoryPageClient() {
   const supabase = createClient();
@@ -135,6 +136,26 @@ export function InventoryPageClient() {
     }
   }
 
+  function handleExport() {
+    const rows = filtered.map((p) => ({
+      Producto: p.name,
+      Marca: p.brand ?? "",
+      Categoría: p.category,
+      Detalle: p.detail ?? "",
+      "Precio de venta": p.sale_price_cents / 100,
+      Stock: p.stock_qty,
+      "Alerta si stock ≤": p.low_stock_threshold,
+    }));
+
+    if (rows.length === 0) {
+      toast({ title: "No hay productos para exportar", variant: "danger" });
+      return;
+    }
+
+    exportToExcel("inventario-orbitcrm", "Inventario", rows);
+    toast({ title: `${rows.length} productos exportados`, variant: "success" });
+  }
+
   return (
     <div>
       <PageHeader
@@ -142,6 +163,10 @@ export function InventoryPageClient() {
         description={`${products.length} ${products.length === 1 ? "producto" : "productos"} registrados`}
         actions={
           <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={handleExport}>
+              <IconDownload width={16} height={16} />
+              <span className="hidden sm:inline">Exportar</span>
+            </Button>
             <Button variant="secondary" onClick={() => setImportOpen(true)}>
               <IconUpload width={16} height={16} />
               Importar Excel

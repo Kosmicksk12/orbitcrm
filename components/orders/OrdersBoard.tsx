@@ -11,6 +11,7 @@ import { EmptyState, ErrorState, Skeleton, SkeletonRow } from "@/components/ui/S
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { OrderForm, type OrderFormValues } from "./OrderForm";
 import {
+  IconDownload,
   IconLayoutGrid,
   IconList,
   IconPlus,
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/Icons";
 import { ORDER_STATUSES, type OrderStatus, type ServiceOrder } from "@/lib/types";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
+import { exportToExcel } from "@/lib/export";
 
 type View = "kanban" | "list";
 type StatusFilter = OrderStatus | "todos";
@@ -154,6 +156,32 @@ export function OrdersBoard() {
     }
   }
 
+  function handleExport() {
+    const rows = (statusFilter === "todos" ? searched : listRows).map((o) => ({
+      "N.º de orden": o.order_number,
+      Cliente: o.client_name,
+      Teléfono: o.client_phone,
+      Equipo: [o.device_brand, o.device_model].filter(Boolean).join(" "),
+      Técnico: o.technician ?? "",
+      Estado: ORDER_STATUSES.find((s) => s.id === o.status)?.label ?? o.status,
+      Total: o.total_cents / 100,
+      Costo: o.cost_cents / 100,
+      Ganancia: (o.total_cents - o.cost_cents) / 100,
+      Abonado: o.paid_cents / 100,
+      Saldo: (o.total_cents - o.paid_cents) / 100,
+      "Garantía (días)": o.warranty_days,
+      Fecha: formatDate(o.created_at),
+    }));
+
+    if (rows.length === 0) {
+      toast({ title: "No hay órdenes para exportar", variant: "danger" });
+      return;
+    }
+
+    exportToExcel("ordenes-orbitcrm", "Órdenes", rows);
+    toast({ title: `${rows.length} órdenes exportadas`, variant: "success" });
+  }
+
   return (
     <div className="flex h-full flex-col">
       <PageHeader
@@ -189,6 +217,10 @@ export function OrdersBoard() {
                 <IconList width={16} height={16} />
               </button>
             </div>
+            <Button variant="secondary" onClick={handleExport}>
+              <IconDownload width={16} height={16} />
+              <span className="hidden sm:inline">Exportar</span>
+            </Button>
             <Button
               onClick={() => {
                 setEditing(null);
