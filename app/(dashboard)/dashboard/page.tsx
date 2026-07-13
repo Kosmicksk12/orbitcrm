@@ -22,9 +22,9 @@ export default async function DashboardPage() {
 
   const activeOrders = orders.filter((o) => o.status !== "entregado" && o.status !== "pagada");
   const monthKey = new Date().toISOString().slice(0, 7);
-  const salesThisMonth = orders
-    .filter((o) => o.created_at.slice(0, 7) === monthKey)
-    .reduce((sum, o) => sum + o.total_cents, 0);
+  const ordersThisMonth = orders.filter((o) => o.created_at.slice(0, 7) === monthKey);
+  const salesThisMonth = ordersThisMonth.reduce((sum, o) => sum + o.total_cents, 0);
+  const profitThisMonth = ordersThisMonth.reduce((sum, o) => sum + (o.total_cents - o.cost_cents), 0);
   const outstandingBalance = orders.reduce((sum, o) => sum + Math.max(0, o.total_cents - o.paid_cents), 0);
   const uniqueClients = new Set(orders.map((o) => o.client_phone)).size;
   const recentOrders = orders.slice(0, 5);
@@ -39,6 +39,7 @@ export default async function DashboardPage() {
     { label: "Reparaciones activas", value: activeOrders.length, icon: IconWrench, href: "/orders" },
     { label: "Clientes", value: uniqueClients, icon: IconUsers, href: "/clients" },
     { label: "Ventas del mes", value: formatCurrency(salesThisMonth), icon: IconTrendingUp, href: "/orders" },
+    { label: "Ganancia del mes", value: formatCurrency(profitThisMonth), icon: IconTrendingUp, href: "/orders" },
     { label: "Saldo pendiente", value: formatCurrency(outstandingBalance), icon: IconDeal, href: "/orders" },
     { label: "Stock bajo", value: lowStockCount, icon: IconBox, href: "/inventory" },
   ];
@@ -47,7 +48,7 @@ export default async function DashboardPage() {
     <div>
       <PageHeader title="Panel" description="Un vistazo general a la actividad del taller." />
 
-      <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-3 xl:grid-cols-6">
         {stats.map((s) => (
           <Link key={s.label} href={s.href}>
             <Card className="p-5 transition-shadow hover:shadow-raised">

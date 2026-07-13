@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Input, Textarea, Select, FieldWrapper } from "@/components/ui/Field";
 import { IconPrinter } from "@/components/ui/Icons";
 import { ORDER_STATUSES, type OrderStatus, type ServiceOrder } from "@/lib/types";
+import { formatCurrency } from "@/lib/utils";
 
 export interface OrderFormValues {
   client_name: string;
@@ -17,6 +18,7 @@ export interface OrderFormValues {
   status: OrderStatus;
   total: string;
   paid: string;
+  cost: string;
   warranty_days: string;
   notes: string;
 }
@@ -31,6 +33,7 @@ const EMPTY: OrderFormValues = {
   status: "recibido",
   total: "",
   paid: "",
+  cost: "",
   warranty_days: "90",
   notes: "",
 };
@@ -60,6 +63,7 @@ export function OrderForm({
           status: order.status,
           total: (order.total_cents / 100).toString(),
           paid: (order.paid_cents / 100).toString(),
+          cost: (order.cost_cents / 100).toString(),
           warranty_days: order.warranty_days.toString(),
           notes: order.notes ?? "",
         }
@@ -173,8 +177,8 @@ export function OrderForm({
           </FieldWrapper>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          <FieldWrapper label="Total" htmlFor="total">
+        <div className="grid grid-cols-2 gap-3">
+          <FieldWrapper label="Total cobrado" htmlFor="total">
             <Input
               id="total"
               type="number"
@@ -198,6 +202,21 @@ export function OrderForm({
               placeholder="0"
             />
           </FieldWrapper>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <FieldWrapper label="Costo del repuesto" htmlFor="cost" hint="Lo que te costó a ti — no aparece en la garantía del cliente.">
+            <Input
+              id="cost"
+              type="number"
+              min="0"
+              step="1"
+              inputMode="decimal"
+              value={values.cost}
+              onChange={(e) => update("cost", e.target.value)}
+              placeholder="40000"
+            />
+          </FieldWrapper>
           <FieldWrapper label="Garantía (días)" htmlFor="warranty_days">
             <Input
               id="warranty_days"
@@ -209,6 +228,19 @@ export function OrderForm({
             />
           </FieldWrapper>
         </div>
+
+        {(parseFloat(values.total || "0") > 0 || parseFloat(values.cost || "0") > 0) && (
+          <div className="flex items-center justify-between rounded-xl bg-success-soft px-4 py-3 text-sm dark:bg-success/10">
+            <span className="font-medium text-success">Ganancia neta estimada</span>
+            <span className="font-mono font-semibold text-success">
+              {formatCurrency(
+                Math.round(
+                  ((parseFloat(values.total || "0") || 0) - (parseFloat(values.cost || "0") || 0)) * 100
+                )
+              )}
+            </span>
+          </div>
+        )}
 
         <FieldWrapper label="Notas internas" htmlFor="notes">
           <Textarea

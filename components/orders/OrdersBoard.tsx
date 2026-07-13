@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/Toaster";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Field";
+import { Input, Select } from "@/components/ui/Field";
 import { Card, Badge } from "@/components/ui/Primitives";
 import { EmptyState, ErrorState, Skeleton, SkeletonRow } from "@/components/ui/States";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -106,6 +106,7 @@ export function OrdersBoard() {
       status: values.status,
       total_cents: Math.round((parseFloat(values.total || "0") || 0) * 100),
       paid_cents: Math.round((parseFloat(values.paid || "0") || 0) * 100),
+      cost_cents: Math.round((parseFloat(values.cost || "0") || 0) * 100),
       warranty_days: parseInt(values.warranty_days || "0", 10) || 0,
       notes: values.notes.trim() || null,
     };
@@ -301,6 +302,7 @@ export function OrdersBoard() {
                     <th className="px-3 py-3 font-medium">Equipo</th>
                     <th className="px-3 py-3 font-medium">Fecha</th>
                     <th className="px-3 py-3 font-medium">Total</th>
+                    <th className="px-3 py-3 font-medium">Ganancia</th>
                     <th className="px-3 py-3 font-medium">Saldo</th>
                     <th className="px-3 py-3 font-medium">Estado</th>
                     <th className="px-3 py-3 font-medium text-right">Acciones</th>
@@ -330,15 +332,32 @@ export function OrdersBoard() {
                         <td className="px-3 py-3 font-mono text-ink dark:text-ink-dark">
                           {formatCurrency(o.total_cents)}
                         </td>
+                        <td className="px-3 py-3 font-mono text-success">
+                          {formatCurrency(o.total_cents - o.cost_cents)}
+                        </td>
                         <td className="px-3 py-3 font-mono">
                           <span className={balance > 0 ? "text-warning" : "text-ink dark:text-ink-dark"}>
                             {formatCurrency(balance)}
                           </span>
                         </td>
-                        <td className="px-3 py-3">
-                          <Badge tone={o.status === "pagada" || o.status === "entregado" ? "success" : "accent"}>
-                            {ORDER_STATUSES.find((s) => s.id === o.status)?.label}
-                          </Badge>
+                        <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                          <Select
+                            value={o.status}
+                            onChange={(e) => moveOrder(o.id, e.target.value as OrderStatus)}
+                            aria-label={`Cambiar estado de ${o.order_number}`}
+                            className={cn(
+                              "h-8 w-40 py-1 text-xs font-medium",
+                              o.status === "pagada" || o.status === "entregado"
+                                ? "text-success"
+                                : "text-accent"
+                            )}
+                          >
+                            {ORDER_STATUSES.map((s) => (
+                              <option key={s.id} value={s.id}>
+                                {s.label}
+                              </option>
+                            ))}
+                          </Select>
                         </td>
                         <td className="px-3 py-3">
                           <div className="flex justify-end gap-1">
@@ -461,9 +480,14 @@ export function OrdersBoard() {
                             </p>
                           )}
                           <div className="mt-2 flex items-center justify-between">
-                            <span className="font-mono text-sm text-ink dark:text-ink-dark">
-                              {formatCurrency(o.total_cents)}
-                            </span>
+                            <div>
+                              <span className="font-mono text-sm text-ink dark:text-ink-dark">
+                                {formatCurrency(o.total_cents)}
+                              </span>
+                              <span className="ml-1.5 font-mono text-xs text-success">
+                                (+{formatCurrency(o.total_cents - o.cost_cents)})
+                              </span>
+                            </div>
                             <Badge tone={balance > 0 ? "warning" : "success"}>
                               {balance > 0 ? `Saldo ${formatCurrency(balance)}` : "Pagado"}
                             </Badge>

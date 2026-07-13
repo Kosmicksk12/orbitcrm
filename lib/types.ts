@@ -19,6 +19,7 @@ export interface ServiceOrder {
   status: OrderStatus;
   total_cents: number;
   paid_cents: number;
+  cost_cents: number;
   warranty_days: number;
   notes: string | null;
   created_at: string;
