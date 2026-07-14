@@ -10,6 +10,7 @@ import { Input, FieldWrapper } from "@/components/ui/Field";
 import { Card } from "@/components/ui/Primitives";
 import { Skeleton } from "@/components/ui/States";
 import { IconLogout } from "@/components/ui/Icons";
+import { TeamSettings } from "./TeamSettings";
 
 type Theme = "system" | "light" | "dark";
 const THEME_KEY = "orbitcrm:theme";
@@ -153,6 +154,8 @@ export function SettingsClient() {
             ))}
           </div>
         </Card>
+
+        <TeamSettings />
 
         <Card className="p-6">
           <h2 className="font-display text-base font-semibold text-ink dark:text-ink-dark">Sesión</h2>

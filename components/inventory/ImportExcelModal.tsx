@@ -6,6 +6,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, FieldWrapper } from "@/components/ui/Field";
 import { createClient } from "@/lib/supabase/client";
+import { useShop } from "@/components/shop/ShopContext";
 import { useToast } from "@/components/ui/Toaster";
 import { IconAlertTriangle } from "@/components/ui/Icons";
 import { formatCurrency } from "@/lib/utils";
@@ -40,6 +41,7 @@ export function ImportExcelModal({
   onImported: () => void;
 }) {
   const supabase = createClient();
+  const { shopId } = useShop();
   const { toast } = useToast();
 
   const [step, setStep] = useState<Step>("upload");
@@ -151,6 +153,7 @@ export function ImportExcelModal({
       .filter(({ parsed }) => parsed.name)
       .map(({ row, parsed }) => ({
         owner_id: user.id,
+        shop_id: shopId,
         name: parsed.name,
         brand: brandColumn ? String(row[brandColumn] ?? "").trim() || null : null,
         category: category.trim() || "General",

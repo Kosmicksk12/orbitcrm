@@ -6,9 +6,30 @@ export type OrderStatus =
   | "entregado"
   | "pagada";
 
+export type ShopRole = "admin" | "member";
+
+export interface ShopMember {
+  shop_id: string;
+  user_id: string;
+  role: ShopRole;
+  created_at: string;
+  email?: string;
+  full_name?: string | null;
+}
+
+export interface ShopInvite {
+  id: string;
+  shop_id: string;
+  email: string;
+  role: ShopRole;
+  invited_by: string | null;
+  created_at: string;
+}
+
 export interface ServiceOrder {
   id: string;
   owner_id: string;
+  shop_id: string;
   order_number: string;
   client_name: string;
   client_phone: string;
@@ -45,6 +66,7 @@ export interface ClientSummary {
 export interface InventoryProduct {
   id: string;
   owner_id: string;
+  shop_id: string;
   name: string;
   brand: string | null;
   category: string;

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useShop } from "@/components/shop/ShopContext";
 import { useToast } from "@/components/ui/Toaster";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
@@ -18,6 +19,7 @@ import { exportToExcel } from "@/lib/export";
 
 export function InventoryPageClient() {
   const supabase = createClient();
+  const { shopId, isAdmin } = useShop();
   const { toast } = useToast();
 
   const [products, setProducts] = useState<InventoryProduct[]>([]);
@@ -97,7 +99,9 @@ export function InventoryPageClient() {
       }
       toast({ title: "Producto actualizado", variant: "success" });
     } else {
-      const { error: err } = await supabase.from("inventory_products").insert({ ...payload, owner_id: user.id });
+      const { error: err } = await supabase
+        .from("inventory_products")
+        .insert({ ...payload, owner_id: user.id, shop_id: shopId });
       if (err) {
         toast({ title: "No se pudo crear el producto", description: err.message, variant: "danger" });
         return;
@@ -345,7 +349,8 @@ export function InventoryPageClient() {
                         <button
                           onClick={() => setDeleting(p)}
                           aria-label={`Eliminar ${p.name}`}
-                          className="rounded-lg p-2 text-ink-muted hover:bg-danger-soft hover:text-danger dark:hover:bg-danger/10"
+                          className="rounded-lg p-2 text-ink-muted hover:bg-danger-soft hover:text-danger dark:hover:bg-danger/10 disabled:hidden"
+                          disabled={!isAdmin}
                         >
                           <IconTrash width={16} height={16} />
                         </button>

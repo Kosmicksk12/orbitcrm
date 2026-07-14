@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useShop } from "@/components/shop/ShopContext";
 import { useToast } from "@/components/ui/Toaster";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
@@ -40,6 +41,7 @@ const STATUS_ACCENT: Record<OrderStatus, string> = {
 export function OrdersBoard() {
   const supabase = createClient();
   const { toast } = useToast();
+  const { shopId, isAdmin } = useShop();
 
   const [orders, setOrders] = useState<ServiceOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -127,7 +129,9 @@ export function OrdersBoard() {
       }
       toast({ title: "Orden actualizada", variant: "success" });
     } else {
-      const { error: err } = await supabase.from("service_orders").insert({ ...payload, owner_id: user.id });
+      const { error: err } = await supabase
+        .from("service_orders")
+        .insert({ ...payload, owner_id: user.id, shop_id: shopId });
       if (err) {
         toast({ title: "No se pudo crear la orden", description: err.message, variant: "danger" });
         return;
@@ -415,7 +419,9 @@ export function OrdersBoard() {
                                 setDeleting(o);
                               }}
                               aria-label={`Eliminar ${o.order_number}`}
-                              className="rounded-lg p-2 text-ink-muted hover:bg-danger-soft hover:text-danger dark:hover:bg-danger/10"
+                              className="rounded-lg p-2 text-ink-muted hover:bg-danger-soft hover:text-danger dark:hover:bg-danger/10 disabled:cursor-not-allowed disabled:opacity-30"
+                              disabled={!isAdmin}
+                              title={isAdmin ? undefined : "Solo un administrador puede eliminar órdenes"}
                             >
                               <IconTrash width={16} height={16} />
                             </button>
@@ -502,7 +508,8 @@ export function OrdersBoard() {
                                   setDeleting(o);
                                 }}
                                 aria-label={`Eliminar ${o.order_number}`}
-                                className="rounded-md p-1 text-ink-muted hover:bg-danger-soft hover:text-danger dark:hover:bg-danger/10"
+                                className="rounded-md p-1 text-ink-muted hover:bg-danger-soft hover:text-danger dark:hover:bg-danger/10 disabled:hidden"
+                                disabled={!isAdmin}
                               >
                                 <IconTrash width={14} height={14} />
                               </button>
