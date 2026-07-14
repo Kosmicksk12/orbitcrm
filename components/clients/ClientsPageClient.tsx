@@ -9,6 +9,7 @@ import { EmptyState, ErrorState, Skeleton } from "@/components/ui/States";
 import { IconMail, IconPhone, IconSearch, IconUsers, IconWrench } from "@/components/ui/Icons";
 import { ORDER_STATUSES, type ClientSummary, type ServiceOrder } from "@/lib/types";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
+import { consumePendingSearch } from "@/lib/searchBridge";
 
 function buildClientSummaries(orders: ServiceOrder[]): ClientSummary[] {
   const byPhone = new Map<string, ServiceOrder[]>();
@@ -78,6 +79,8 @@ export function ClientsPageClient() {
 
   useEffect(() => {
     load();
+    const pending = consumePendingSearch("clients");
+    if (pending) setQuery(pending);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

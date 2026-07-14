@@ -23,6 +23,7 @@ import {
 import { ORDER_STATUSES, type OrderStatus, type ServiceOrder } from "@/lib/types";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { exportToExcel } from "@/lib/export";
+import { consumePendingSearch } from "@/lib/searchBridge";
 
 type View = "kanban" | "list";
 type StatusFilter = OrderStatus | "todos";
@@ -67,6 +68,11 @@ export function OrdersBoard() {
 
   useEffect(() => {
     load();
+    const pending = consumePendingSearch("orders");
+    if (pending) {
+      setQuery(pending);
+      setView("list");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
