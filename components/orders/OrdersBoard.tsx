@@ -115,7 +115,10 @@ export function OrdersBoard() {
       technician: values.technician.trim() || null,
       status: values.status,
       total_cents: Math.round((parseFloat(values.total || "0") || 0) * 100),
-      paid_cents: Math.round((parseFloat(values.paid || "0") || 0) * 100),
+      paid_cents:
+        values.status === "pagada"
+          ? Math.round((parseFloat(values.total || "0") || 0) * 100)
+          : Math.round((parseFloat(values.paid || "0") || 0) * 100),
       cost_cents: Math.round((parseFloat(values.cost || "0") || 0) * 100),
       warranty_days: parseInt(values.warranty_days || "0", 10) || 0,
       notes: values.notes.trim() || null,
@@ -158,8 +161,19 @@ export function OrdersBoard() {
 
   async function moveOrder(orderId: string, status: OrderStatus) {
     const previous = orders;
-    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
-    const { error: err } = await supabase.from("service_orders").update({ status }).eq("id", orderId);
+    const order = orders.find((o) => o.id === orderId);
+    // "Pagada" means fully paid by definition — settle the balance
+    // automatically so the order never shows a pending balance while
+    // marked as paid.
+    const extraUpdate = status === "pagada" && order ? { paid_cents: order.total_cents } : {};
+
+    setOrders((prev) =>
+      prev.map((o) => (o.id === orderId ? { ...o, status, ...extraUpdate } : o))
+    );
+    const { error: err } = await supabase
+      .from("service_orders")
+      .update({ status, ...extraUpdate })
+      .eq("id", orderId);
     if (err) {
       setOrders(previous);
       toast({ title: "No se pudo mover la orden", description: err.message, variant: "danger" });

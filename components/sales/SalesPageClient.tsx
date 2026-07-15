@@ -42,11 +42,13 @@ export function SalesPageClient() {
         .order("created_at", { ascending: false })
         .limit(50),
     ]);
-    if (productsRes.error || salesRes.error) setError(true);
-    else {
-      setProducts((productsRes.data ?? []) as InventoryProduct[]);
-      setSales((salesRes.data ?? []) as Sale[]);
-    }
+
+    // Products and sales are independent — a failure loading sales history
+    // must never block the product search/cart from working.
+    if (!productsRes.error) setProducts((productsRes.data ?? []) as InventoryProduct[]);
+    if (!salesRes.error) setSales((salesRes.data ?? []) as Sale[]);
+    else setError(true);
+
     setLoading(false);
   }
 
