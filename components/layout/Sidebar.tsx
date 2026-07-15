@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/Logo";
 import {
   IconBox,
+  IconCart,
   IconDashboard,
   IconSettings,
   IconUsers,
@@ -15,6 +16,7 @@ import {
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Panel", icon: IconDashboard },
   { href: "/orders", label: "Órdenes", icon: IconWrench },
+  { href: "/sales", label: "Ventas", icon: IconCart },
   { href: "/clients", label: "Clientes", icon: IconUsers },
   { href: "/inventory", label: "Inventario", icon: IconBox },
   { href: "/settings", label: "Ajustes", icon: IconSettings },

@@ -82,6 +82,14 @@ export const IconAlertTriangle = (p: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const IconCart = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <circle cx="9" cy="20" r="1.4" fill="currentColor" stroke="none" />
+    <circle cx="18" cy="20" r="1.4" fill="currentColor" stroke="none" />
+    <path d="M2.5 3h2.4l2.1 11.4a2 2 0 002 1.6h8.6a2 2 0 002-1.6L21 7H6" />
+  </svg>
+);
+
 export const IconList = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base(p)}>
     <path d="M8 6h13M8 12h13M8 18h13" />

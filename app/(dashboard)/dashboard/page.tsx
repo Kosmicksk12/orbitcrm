@@ -3,8 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, Badge } from "@/components/ui/Primitives";
 import { EmptyState } from "@/components/ui/States";
-import { IconBox, IconDeal, IconTrendingUp, IconUsers, IconWrench } from "@/components/ui/Icons";
-import { ORDER_STATUSES, type ServiceOrder } from "@/lib/types";
+import { IconBox, IconCart, IconDeal, IconTrendingUp, IconUsers, IconWrench } from "@/components/ui/Icons";
+import { ORDER_STATUSES, type Sale, type ServiceOrder } from "@/lib/types";
 import { formatCurrency, formatRelativeTime } from "@/lib/utils";
 
 export const metadata = { title: "Panel" };
@@ -12,10 +12,13 @@ export const metadata = { title: "Panel" };
 export default async function DashboardPage() {
   const supabase = createClient();
 
-  const [{ data }, { data: inventory }] = await Promise.all([
+  const [{ data }, { data: inventory }, { data: salesData }] = await Promise.all([
     supabase.from("service_orders").select("*").order("created_at", { ascending: false }),
     supabase.from("inventory_products").select("stock_qty, low_stock_threshold"),
+    supabase.from("sales").select("*").order("created_at", { ascending: false }),
   ]);
+
+  const sales = (salesData ?? []) as Sale[];
 
   const orders = (data ?? []) as ServiceOrder[];
   const lowStockCount = (inventory ?? []).filter((p) => p.stock_qty <= p.low_stock_threshold).length;
@@ -25,6 +28,9 @@ export default async function DashboardPage() {
   const ordersThisMonth = orders.filter((o) => o.created_at.slice(0, 7) === monthKey);
   const salesThisMonth = ordersThisMonth.reduce((sum, o) => sum + o.total_cents, 0);
   const profitThisMonth = ordersThisMonth.reduce((sum, o) => sum + (o.total_cents - o.cost_cents), 0);
+  const accessorySalesThisMonth = sales
+    .filter((s) => s.created_at.slice(0, 7) === monthKey)
+    .reduce((sum, s) => sum + s.total_cents, 0);
   const outstandingBalance = orders.reduce((sum, o) => sum + Math.max(0, o.total_cents - o.paid_cents), 0);
   const uniqueClients = new Set(orders.map((o) => o.client_phone)).size;
   const recentOrders = orders.slice(0, 5);
@@ -38,7 +44,8 @@ export default async function DashboardPage() {
   const stats = [
     { label: "Reparaciones activas", value: activeOrders.length, icon: IconWrench, href: "/orders" },
     { label: "Clientes", value: uniqueClients, icon: IconUsers, href: "/clients" },
-    { label: "Ventas del mes", value: formatCurrency(salesThisMonth), icon: IconTrendingUp, href: "/orders" },
+    { label: "Ventas reparaciones (mes)", value: formatCurrency(salesThisMonth), icon: IconTrendingUp, href: "/orders" },
+    { label: "Ventas accesorios (mes)", value: formatCurrency(accessorySalesThisMonth), icon: IconCart, href: "/sales" },
     { label: "Ganancia del mes", value: formatCurrency(profitThisMonth), icon: IconTrendingUp, href: "/orders" },
     { label: "Saldo pendiente", value: formatCurrency(outstandingBalance), icon: IconDeal, href: "/orders" },
     { label: "Stock bajo", value: lowStockCount, icon: IconBox, href: "/inventory" },
@@ -48,7 +55,7 @@ export default async function DashboardPage() {
     <div>
       <PageHeader title="Panel" description="Un vistazo general a la actividad del taller." />
 
-      <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-3 xl:grid-cols-4">
         {stats.map((s) => (
           <Link key={s.label} href={s.href}>
             <Card className="p-5 transition-shadow hover:shadow-raised">

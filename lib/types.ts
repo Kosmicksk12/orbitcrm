@@ -78,6 +78,26 @@ export interface InventoryProduct {
   updated_at: string;
 }
 
+export interface SaleItem {
+  id: string;
+  sale_id: string;
+  product_id: string | null;
+  product_name: string;
+  unit_price_cents: number;
+  quantity: number;
+  subtotal_cents: number;
+}
+
+export interface Sale {
+  id: string;
+  owner_id: string;
+  shop_id: string;
+  client_name: string | null;
+  total_cents: number;
+  created_at: string;
+  sale_items?: SaleItem[];
+}
+
 export const ORDER_STATUSES: { id: OrderStatus; label: string }[] = [
   { id: "recibido", label: "Recibido" },
   { id: "diagnostico", label: "Diagnóstico" },
