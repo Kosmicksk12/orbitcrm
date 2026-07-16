@@ -575,6 +575,7 @@ export function OrdersBoard() {
       </div>
 
       <OrderForm
+        key={editing?.id ?? "new"}
         open={formOpen}
         onClose={() => {
           setFormOpen(false);

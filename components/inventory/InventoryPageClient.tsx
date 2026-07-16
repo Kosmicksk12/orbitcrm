@@ -365,6 +365,7 @@ export function InventoryPageClient() {
       </div>
 
       <ProductForm
+        key={editing?.id ?? "new"}
         open={formOpen}
         onClose={() => {
           setFormOpen(false);
