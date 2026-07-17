@@ -98,6 +98,28 @@ export interface Sale {
   sale_items?: SaleItem[];
 }
 
+export interface Expense {
+  id: string;
+  owner_id: string;
+  shop_id: string;
+  category: string;
+  description: string;
+  amount_cents: number;
+  expense_date: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export const EXPENSE_CATEGORIES = [
+  "Repuestos",
+  "Insumos",
+  "Arriendo",
+  "Servicios",
+  "Transporte",
+  "Nómina",
+  "Otro",
+];
+
 export const ORDER_STATUSES: { id: OrderStatus; label: string }[] = [
   { id: "recibido", label: "Recibido" },
   { id: "diagnostico", label: "Diagnóstico" },

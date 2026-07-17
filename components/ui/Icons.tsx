@@ -90,6 +90,13 @@ export const IconCart = (p: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const IconReceipt = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <path d="M6 2h12v20l-2.5-1.5L13 22l-1-1.5-1 1.5-2.5-1.5L6 22V2z" />
+    <path d="M9 7h6M9 11h6M9 15h4" />
+  </svg>
+);
+
 export const IconList = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base(p)}>
     <path d="M8 6h13M8 12h13M8 18h13" />
