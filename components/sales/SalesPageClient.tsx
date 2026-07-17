@@ -2,24 +2,31 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useShop } from "@/components/shop/ShopContext";
 import { useToast } from "@/components/ui/Toaster";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Field";
 import { Card, Badge } from "@/components/ui/Primitives";
 import { EmptyState, ErrorState, Skeleton, SkeletonRow } from "@/components/ui/States";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { IconBox, IconCart, IconPlus, IconSearch, IconTrash } from "@/components/ui/Icons";
 import type { InventoryProduct, Sale } from "@/lib/types";
-import { cn, formatCurrency, formatRelativeTime } from "@/lib/utils";
+import { formatCurrency, formatRelativeTime } from "@/lib/utils";
 
 interface CartLine {
-  product: InventoryProduct;
+  key: string;
+  name: string;
+  unitPriceCents: number;
   quantity: number;
+  productId: string | null; // null = ítem personalizado, no descuenta stock
+  maxStock: number | null; // null = sin límite (personalizado)
 }
 
 export function SalesPageClient() {
   const supabase = createClient();
   const { toast } = useToast();
+  const { isAdmin } = useShop();
 
   const [products, setProducts] = useState<InventoryProduct[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
@@ -30,6 +37,12 @@ export function SalesPageClient() {
   const [cart, setCart] = useState<CartLine[]>([]);
   const [clientName, setClientName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState<Sale | null>(null);
+
+  const [customOpen, setCustomOpen] = useState(false);
+  const [customName, setCustomName] = useState("");
+  const [customPrice, setCustomPrice] = useState("");
+  const [customQty, setCustomQty] = useState("1");
 
   async function load() {
     setLoading(true);
@@ -43,8 +56,6 @@ export function SalesPageClient() {
         .limit(50),
     ]);
 
-    // Products and sales are independent — a failure loading sales history
-    // must never block the product search/cart from working.
     if (!productsRes.error) setProducts((productsRes.data ?? []) as InventoryProduct[]);
     if (!salesRes.error) setSales((salesRes.data ?? []) as Sale[]);
     else setError(true);
@@ -70,34 +81,65 @@ export function SalesPageClient() {
 
   function addToCart(product: InventoryProduct) {
     setCart((prev) => {
-      const existing = prev.find((l) => l.product.id === product.id);
+      const existing = prev.find((l) => l.productId === product.id);
       if (existing) {
         return prev.map((l) =>
-          l.product.id === product.id ? { ...l, quantity: Math.min(l.quantity + 1, product.stock_qty) } : l
+          l.productId === product.id ? { ...l, quantity: Math.min(l.quantity + 1, product.stock_qty) } : l
         );
       }
-      return [...prev, { product, quantity: 1 }];
+      return [
+        ...prev,
+        {
+          key: product.id,
+          name: product.name,
+          unitPriceCents: product.sale_price_cents,
+          quantity: 1,
+          productId: product.id,
+          maxStock: product.stock_qty,
+        },
+      ];
     });
     setQuery("");
   }
 
-  function updateQuantity(productId: string, quantity: number) {
+  function addCustomItem() {
+    if (!customName.trim()) return;
+    const priceCents = Math.round((parseFloat(customPrice || "0") || 0) * 100);
+    const qty = Math.max(1, parseInt(customQty || "1", 10) || 1);
+    setCart((prev) => [
+      ...prev,
+      {
+        key: `custom-${Date.now()}`,
+        name: customName.trim(),
+        unitPriceCents: priceCents,
+        quantity: qty,
+        productId: null,
+        maxStock: null,
+      },
+    ]);
+    setCustomName("");
+    setCustomPrice("");
+    setCustomQty("1");
+    setCustomOpen(false);
+  }
+
+  function updateQuantity(key: string, quantity: number) {
     setCart((prev) =>
       prev
-        .map((l) =>
-          l.product.id === productId
-            ? { ...l, quantity: Math.max(1, Math.min(quantity, l.product.stock_qty)) }
-            : l
-        )
+        .map((l) => {
+          if (l.key !== key) return l;
+          const capped = l.maxStock != null ? Math.min(quantity, l.maxStock) : quantity;
+          return { ...l, quantity: Math.max(1, capped) };
+        })
         .filter((l) => l.quantity > 0)
     );
   }
 
-  function removeFromCart(productId: string) {
-    setCart((prev) => prev.filter((l) => l.product.id !== productId));
+  function removeFromCart(key: string) {
+    setCart((prev) => prev.filter((l) => l.key !== key));
   }
 
-  const cartTotal = cart.reduce((sum, l) => sum + l.product.sale_price_cents * l.quantity, 0);
+  const cartTotal = cart.reduce((sum, l) => sum + l.unitPriceCents * l.quantity, 0);
 
   async function handleCheckout() {
     if (cart.length === 0) return;
@@ -105,7 +147,16 @@ export function SalesPageClient() {
 
     const { error: err } = await supabase.rpc("create_sale", {
       p_client_name: clientName || null,
-      p_items: cart.map((l) => ({ product_id: l.product.id, quantity: l.quantity })),
+      p_items: cart.map((l) =>
+        l.productId
+          ? { product_id: l.productId, quantity: l.quantity }
+          : {
+              product_id: null,
+              quantity: l.quantity,
+              custom_name: l.name,
+              custom_price_cents: l.unitPriceCents,
+            }
+      ),
     });
 
     setSubmitting(false);
@@ -118,6 +169,19 @@ export function SalesPageClient() {
     setCart([]);
     setClientName("");
     load();
+  }
+
+  async function handleDeleteSale() {
+    if (!deleting) return;
+    const { error: err } = await supabase.rpc("delete_sale", { p_sale_id: deleting.id });
+    if (err) {
+      toast({ title: "No se pudo eliminar", description: err.message, variant: "danger" });
+    } else {
+      toast({ title: "Venta eliminada", description: "El stock de sus productos ya se repuso.", variant: "success" });
+      setSales((prev) => prev.filter((s) => s.id !== deleting.id));
+      load(); // refresca stock en el buscador de productos
+    }
+    setDeleting(null);
   }
 
   return (
@@ -164,6 +228,7 @@ export function SalesPageClient() {
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm text-ink dark:text-ink-dark">{p.name}</p>
                         <p className="truncate text-xs text-ink-muted dark:text-ink-dark-muted">
+                          {p.detail ? `${p.detail} · ` : ""}
                           {p.stock_qty === 0 ? "Sin stock" : `${p.stock_qty} en stock`}
                         </p>
                       </div>
@@ -177,6 +242,56 @@ export function SalesPageClient() {
             )}
           </div>
 
+          {!customOpen ? (
+            <button
+              onClick={() => setCustomOpen(true)}
+              className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-line py-2 text-xs font-medium text-ink-muted hover:border-accent hover:text-accent dark:border-line-dark"
+            >
+              <IconPlus width={13} height={13} />
+              Ítem personalizado (no descuenta stock)
+            </button>
+          ) : (
+            <div className="mt-2.5 space-y-2 rounded-xl border border-line p-3 dark:border-line-dark">
+              <p className="text-xs font-medium text-ink-muted dark:text-ink-dark-muted">
+                Para cosas que no llevas en inventario, como vidrios templados por encargo.
+              </p>
+              <Input
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+                placeholder="Ej. Vidrio templado iPhone 13"
+              />
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  min="0"
+                  step="1"
+                  inputMode="decimal"
+                  value={customPrice}
+                  onChange={(e) => setCustomPrice(e.target.value)}
+                  placeholder="Precio"
+                  className="flex-1"
+                />
+                <Input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={customQty}
+                  onChange={(e) => setCustomQty(e.target.value)}
+                  className="w-20"
+                  aria-label="Cantidad"
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button size="sm" variant="secondary" onClick={() => setCustomOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button size="sm" onClick={addCustomItem} disabled={!customName.trim()}>
+                  Agregar al carrito
+                </Button>
+              </div>
+            </div>
+          )}
+
           <div className="mt-4 space-y-2">
             {cart.length === 0 ? (
               <p className="py-8 text-center text-sm text-ink-muted dark:text-ink-dark-muted">
@@ -185,20 +300,23 @@ export function SalesPageClient() {
             ) : (
               cart.map((line) => (
                 <div
-                  key={line.product.id}
+                  key={line.key}
                   className="flex items-center gap-2 rounded-xl border border-line p-2.5 dark:border-line-dark"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-ink dark:text-ink-dark">
-                      {line.product.name}
+                      {line.name}
+                      {line.productId === null && (
+                        <span className="ml-1.5 text-xs font-normal text-accent">· personalizado</span>
+                      )}
                     </p>
                     <p className="text-xs text-ink-muted dark:text-ink-dark-muted">
-                      {formatCurrency(line.product.sale_price_cents)} c/u
+                      {formatCurrency(line.unitPriceCents)} c/u
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => updateQuantity(line.product.id, line.quantity - 1)}
+                      onClick={() => updateQuantity(line.key, line.quantity - 1)}
                       className="flex h-7 w-7 items-center justify-center rounded-lg border border-line text-ink-muted hover:bg-bg dark:border-line-dark dark:hover:bg-white/5"
                     >
                       −
@@ -207,19 +325,19 @@ export function SalesPageClient() {
                       {line.quantity}
                     </span>
                     <button
-                      onClick={() => updateQuantity(line.product.id, line.quantity + 1)}
-                      disabled={line.quantity >= line.product.stock_qty}
+                      onClick={() => updateQuantity(line.key, line.quantity + 1)}
+                      disabled={line.maxStock != null && line.quantity >= line.maxStock}
                       className="flex h-7 w-7 items-center justify-center rounded-lg border border-line text-ink-muted hover:bg-bg disabled:cursor-not-allowed disabled:opacity-30 dark:border-line-dark dark:hover:bg-white/5"
                     >
                       +
                     </button>
                   </div>
                   <span className="w-20 shrink-0 text-right font-mono text-sm text-ink dark:text-ink-dark">
-                    {formatCurrency(line.product.sale_price_cents * line.quantity)}
+                    {formatCurrency(line.unitPriceCents * line.quantity)}
                   </span>
                   <button
-                    onClick={() => removeFromCart(line.product.id)}
-                    aria-label={`Quitar ${line.product.name}`}
+                    onClick={() => removeFromCart(line.key)}
+                    aria-label={`Quitar ${line.name}`}
                     className="shrink-0 rounded-md p-1 text-ink-muted hover:bg-danger-soft hover:text-danger dark:hover:bg-danger/10"
                   >
                     <IconTrash width={14} height={14} />
@@ -289,9 +407,19 @@ export function SalesPageClient() {
                         {formatRelativeTime(s.created_at)}
                       </p>
                     </div>
-                    <span className="shrink-0 font-mono text-sm font-semibold text-ink dark:text-ink-dark">
-                      {formatCurrency(s.total_cents)}
-                    </span>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className="font-mono text-sm font-semibold text-ink dark:text-ink-dark">
+                        {formatCurrency(s.total_cents)}
+                      </span>
+                      <button
+                        onClick={() => setDeleting(s)}
+                        disabled={!isAdmin}
+                        aria-label="Eliminar venta"
+                        className="rounded-lg p-1.5 text-ink-muted hover:bg-danger-soft hover:text-danger disabled:hidden dark:hover:bg-danger/10"
+                      >
+                        <IconTrash width={14} height={14} />
+                      </button>
+                    </div>
                   </li>
                 );
               })}
@@ -299,6 +427,15 @@ export function SalesPageClient() {
           )}
         </Card>
       </div>
+
+      <ConfirmDialog
+        open={!!deleting}
+        onClose={() => setDeleting(null)}
+        onConfirm={handleDeleteSale}
+        title="Eliminar venta"
+        description="Se eliminará esta venta y se repondrá el stock de los productos de inventario que tenía. Esta acción no se puede deshacer."
+        confirmLabel="Eliminar"
+      />
     </div>
   );
 }
