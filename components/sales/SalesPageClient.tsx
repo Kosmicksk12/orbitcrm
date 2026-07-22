@@ -12,7 +12,7 @@ import { EmptyState, ErrorState, Skeleton, SkeletonRow } from "@/components/ui/S
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { IconBox, IconCart, IconPlus, IconSearch, IconTrash } from "@/components/ui/Icons";
 import type { InventoryProduct, Sale } from "@/lib/types";
-import { formatCurrency, formatRelativeTime } from "@/lib/utils";
+import { formatCurrency, formatDateTime } from "@/lib/utils";
 
 interface CartLine {
   key: string;
@@ -404,7 +404,7 @@ export function SalesPageClient() {
                         {summary || "—"}
                       </p>
                       <p className="text-xs text-ink-muted dark:text-ink-dark-muted">
-                        {formatRelativeTime(s.created_at)}
+                        {formatDateTime(s.created_at)}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
