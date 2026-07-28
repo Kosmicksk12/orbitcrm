@@ -2,7 +2,14 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
-const PUBLIC_PATHS = ["/login", "/manifest.webmanifest", "/sw.js", "/offline.html"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/forgot-password",
+  "/reset-password",
+  "/manifest.webmanifest",
+  "/sw.js",
+  "/offline.html",
+];
 
 function isPublicPath(pathname: string) {
   if (PUBLIC_PATHS.includes(pathname)) return true;
@@ -59,11 +66,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all paths except static assets, so the session cookie stays
-     * fresh, but skip the heavy stuff (images, PWA icons, service worker)
-     * for performance.
-     */
     "/((?!_next/static|_next/image|favicon.ico|icons/|splash/|manifest.webmanifest|sw.js|robots.txt).*)",
   ],
 };

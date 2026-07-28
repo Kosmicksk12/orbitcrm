@@ -2,6 +2,7 @@
 
 import { Suspense, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input, FieldWrapper } from "@/components/ui/Field";
@@ -64,7 +65,11 @@ function LoginForm() {
       options: { data: { full_name: fullName || undefined } },
     });
     if (error) {
-      setErrors({ form: error.message.includes("already") ? "Ese correo ya está registrado." : "No pudimos crear tu cuenta. Intenta de nuevo." });
+      setErrors({
+        form: error.message.includes("already")
+          ? "Ese correo ya está registrado."
+          : "No pudimos crear tu cuenta. Intenta de nuevo.",
+      });
       setLoading(false);
       return;
     }
@@ -156,6 +161,17 @@ function LoginForm() {
                 required
               />
             </FieldWrapper>
+
+            {mode === "sign-in" && (
+              <div className="-mt-2 text-right">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm font-medium text-accent hover:underline"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
+            )}
 
             <Button type="submit" className="w-full" loading={loading}>
               {mode === "sign-in" ? "Ingresar" : "Crear cuenta"}
