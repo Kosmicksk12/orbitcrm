@@ -9,7 +9,27 @@ import { formatCurrency, formatRelativeTime } from "@/lib/utils";
 
 export const metadata = { title: "Panel" };
 
-export default async function DashboardPage() {
+const MONTH_NAMES = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+];
+
+function shiftMonth(monthKey: string, delta: number): string {
+  const [y, m] = monthKey.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + delta, 1));
+  return d.toISOString().slice(0, 7);
+}
+
+function formatMonthLabel(monthKey: string): string {
+  const [y, m] = monthKey.split("-").map(Number);
+  return `${MONTH_NAMES[m - 1]} ${y}`;
+}
+
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: { month?: string };
+}) {
   const supabase = createClient();
 
   const [{ data }, { data: inventory }, { data: salesData }, { data: expensesData }] = await Promise.all([
@@ -21,19 +41,26 @@ export default async function DashboardPage() {
 
   const sales = (salesData ?? []) as Sale[];
   const expenses = (expensesData ?? []) as Expense[];
-
   const orders = (data ?? []) as ServiceOrder[];
   const lowStockCount = (inventory ?? []).filter((p) => p.stock_qty <= p.low_stock_threshold).length;
 
+  const currentMonthKey = new Date().toISOString().slice(0, 7);
+  const requestedMonth = searchParams?.month;
+  const monthKey =
+    requestedMonth && /^\d{4}-\d{2}$/.test(requestedMonth) ? requestedMonth : currentMonthKey;
+  const isCurrentMonth = monthKey === currentMonthKey;
+  const prevMonthKey = shiftMonth(monthKey, -1);
+  const nextMonthKey = shiftMonth(monthKey, 1);
+  const canGoNext = nextMonthKey <= currentMonthKey;
+
   const activeOrders = orders.filter((o) => o.status !== "entregado" && o.status !== "pagada");
-  const monthKey = new Date().toISOString().slice(0, 7);
-  const ordersThisMonth = orders.filter((o) => o.created_at.slice(0, 7) === monthKey);
-  const salesThisMonth = ordersThisMonth.reduce((sum, o) => sum + o.total_cents, 0);
-  const profitThisMonth = ordersThisMonth.reduce((sum, o) => sum + (o.total_cents - o.cost_cents), 0);
-  const accessorySalesThisMonth = sales
+  const ordersInMonth = orders.filter((o) => o.created_at.slice(0, 7) === monthKey);
+  const salesInMonth = ordersInMonth.reduce((sum, o) => sum + o.total_cents, 0);
+  const profitInMonth = ordersInMonth.reduce((sum, o) => sum + (o.total_cents - o.cost_cents), 0);
+  const accessorySalesInMonth = sales
     .filter((s) => s.created_at.slice(0, 7) === monthKey)
     .reduce((sum, s) => sum + s.total_cents, 0);
-  const expensesThisMonth = expenses
+  const expensesInMonth = expenses
     .filter((e) => e.expense_date.slice(0, 7) === monthKey)
     .reduce((sum, e) => sum + e.amount_cents, 0);
   const outstandingBalance = orders.reduce((sum, o) => sum + Math.max(0, o.total_cents - o.paid_cents), 0);
@@ -46,40 +73,106 @@ export default async function DashboardPage() {
   }));
   const maxStatusCount = Math.max(1, ...statusCounts.map((s) => s.count));
 
-  const stats = [
+  const currentStats = [
     { label: "Reparaciones activas", value: activeOrders.length, icon: IconWrench, href: "/orders" },
     { label: "Clientes", value: uniqueClients, icon: IconUsers, href: "/clients" },
-    { label: "Ventas reparaciones (mes)", value: formatCurrency(salesThisMonth), icon: IconTrendingUp, href: "/orders" },
-    { label: "Ventas accesorios (mes)", value: formatCurrency(accessorySalesThisMonth), icon: IconCart, href: "/sales" },
-    { label: "Ganancia del mes", value: formatCurrency(profitThisMonth), icon: IconTrendingUp, href: "/orders" },
-    { label: "Gastos del mes", value: formatCurrency(expensesThisMonth), icon: IconReceipt, href: "/expenses" },
     { label: "Saldo pendiente", value: formatCurrency(outstandingBalance), icon: IconDeal, href: "/orders" },
     { label: "Stock bajo", value: lowStockCount, icon: IconBox, href: "/inventory" },
+  ];
+
+  const monthStats = [
+    { label: "Ventas reparaciones", value: formatCurrency(salesInMonth), icon: IconTrendingUp, href: "/orders" },
+    { label: "Ventas accesorios", value: formatCurrency(accessorySalesInMonth), icon: IconCart, href: "/sales" },
+    { label: "Ganancia", value: formatCurrency(profitInMonth), icon: IconTrendingUp, href: "/orders" },
+    { label: "Gastos", value: formatCurrency(expensesInMonth), icon: IconReceipt, href: "/expenses" },
   ];
 
   return (
     <div>
       <PageHeader title="Panel" description="Un vistazo general a la actividad del taller." />
 
-      <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-3 xl:grid-cols-4">
-        {stats.map((s) => (
-          <Link key={s.label} href={s.href}>
-            <Card className="p-5 transition-shadow hover:shadow-raised">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-ink-muted dark:text-ink-dark-muted">
-                  {s.label}
-                </span>
-                <s.icon width={18} height={18} className="text-accent" />
-              </div>
-              <p className="mt-3 font-mono text-2xl font-semibold text-ink dark:text-ink-dark">
-                {s.value}
-              </p>
-            </Card>
-          </Link>
-        ))}
+      <div className="px-4 pt-2 sm:px-6">
+        <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-ink-muted dark:text-ink-dark-muted">
+          Estado actual
+        </h2>
+        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {currentStats.map((s) => (
+            <Link key={s.label} href={s.href}>
+              <Card className="p-5 transition-shadow hover:shadow-raised">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-ink-muted dark:text-ink-dark-muted">
+                    {s.label}
+                  </span>
+                  <s.icon width={18} height={18} className="text-accent" />
+                </div>
+                <p className="mt-3 font-mono text-2xl font-semibold text-ink dark:text-ink-dark">
+                  {s.value}
+                </p>
+              </Card>
+            </Link>
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 px-4 pb-6 sm:px-6 lg:grid-cols-5">
+      <div className="px-4 pt-6 sm:px-6">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-ink-muted dark:text-ink-dark-muted">
+            Resumen del mes
+          </h2>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/dashboard?month=${prevMonthKey}`}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-line text-ink hover:bg-bg dark:border-line-dark dark:text-ink-dark dark:hover:bg-white/5"
+              aria-label="Mes anterior"
+            >
+              ‹
+            </Link>
+            <span className="min-w-[140px] text-center font-mono text-sm font-medium text-ink dark:text-ink-dark">
+              {formatMonthLabel(monthKey)}
+            </span>
+            {canGoNext ? (
+              <Link
+                href={`/dashboard?month=${nextMonthKey}`}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-line text-ink hover:bg-bg dark:border-line-dark dark:text-ink-dark dark:hover:bg-white/5"
+                aria-label="Mes siguiente"
+              >
+                ›
+              </Link>
+            ) : (
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-line text-ink-muted/40 dark:border-line-dark dark:text-ink-dark-muted/40">
+                ›
+              </span>
+            )}
+            {!isCurrentMonth && (
+              <Link
+                href="/dashboard"
+                className="ml-1 text-sm font-medium text-accent hover:underline"
+              >
+                Mes actual
+              </Link>
+            )}
+          </div>
+        </div>
+        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {monthStats.map((s) => (
+            <Link key={s.label} href={s.href}>
+              <Card className="p-5 transition-shadow hover:shadow-raised">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-ink-muted dark:text-ink-dark-muted">
+                    {s.label}
+                  </span>
+                  <s.icon width={18} height={18} className="text-accent" />
+                </div>
+                <p className="mt-3 font-mono text-2xl font-semibold text-ink dark:text-ink-dark">
+                  {s.value}
+                </p>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 px-4 py-6 sm:px-6 lg:grid-cols-5">
         <Card className="p-5 lg:col-span-2">
           <h2 className="font-display text-base font-semibold text-ink dark:text-ink-dark">
             Órdenes por estado
