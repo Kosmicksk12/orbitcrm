@@ -210,3 +210,9 @@ export const IconCheck = (p: SVGProps<SVGSVGElement>) => (
     <path d="M20 6L9 17l-5-5" />
   </svg>
 );
+
+export const IconChevronDown = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <path d="M6 9l6 6 6-6" />
+  </svg>
+);

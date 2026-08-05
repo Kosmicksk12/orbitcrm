@@ -213,6 +213,8 @@ export function InventoryPageClient() {
           </Card>
         </div>
 
+        <RequestedProductsCard />
+
         {lowStockProducts.length > 0 && (
           <div className="mt-4 flex items-start gap-2.5 rounded-xl bg-warning-soft px-4 py-3 text-sm text-warning dark:bg-warning/10">
             <IconAlertTriangle width={16} height={16} className="mt-0.5 shrink-0" />
@@ -369,8 +371,6 @@ export function InventoryPageClient() {
             </table>
           )}
         </Card>
-
-        <RequestedProductsCard />
       </div>
 
       <ProductForm
