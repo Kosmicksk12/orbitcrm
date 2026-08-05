@@ -48,7 +48,16 @@ export function RequestedProductsCard() {
     e.preventDefault();
     if (!productName.trim()) return;
     setSaving(true);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      setSaving(false);
+      toast({ title: "No se pudo agregar", description: "Sesión no encontrada.", variant: "danger" });
+      return;
+    }
     const { error } = await supabase.from("requested_products").insert({
+      owner_id: user.id,
       shop_id: shopId,
       product_name: productName.trim(),
       client_name: clientName.trim() || null,
