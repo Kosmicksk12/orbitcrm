@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/States";
 import { IconBox, IconCart, IconDeal, IconReceipt, IconTrendingUp, IconUsers, IconWrench } from "@/components/ui/Icons";
 import { ORDER_STATUSES, type Expense, type Sale, type ServiceOrder } from "@/lib/types";
 import { formatCurrency, formatRelativeTime } from "@/lib/utils";
+import { MonthCloseExport } from "@/components/dashboard/MonthCloseExport";
 
 export const metadata = { title: "Panel" };
 
@@ -151,6 +152,9 @@ export default async function DashboardPage({
                 Mes actual
               </Link>
             )}
+            <div className="ml-2">
+              <MonthCloseExport monthKey={monthKey} monthLabel={formatMonthLabel(monthKey)} />
+            </div>
           </div>
         </div>
         <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
