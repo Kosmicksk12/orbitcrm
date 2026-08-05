@@ -10,14 +10,16 @@ import { Input } from "@/components/ui/Field";
 import { Card, Badge } from "@/components/ui/Primitives";
 import { EmptyState, ErrorState, Skeleton, SkeletonRow } from "@/components/ui/States";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { IconBox, IconCart, IconPlus, IconSearch, IconTrash } from "@/components/ui/Icons";
+import { IconBox, IconCart, IconEdit, IconPlus, IconSearch, IconTrash } from "@/components/ui/Icons";
 import type { InventoryProduct, Sale } from "@/lib/types";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { EditSaleModal, type EditSalePayload } from "./EditSaleModal";
 
 interface CartLine {
   key: string;
   name: string;
   unitPriceCents: number;
+  costCents: number;
   quantity: number;
   productId: string | null; // null = ítem personalizado, no descuenta stock
   maxStock: number | null; // null = sin límite (personalizado)
@@ -38,10 +40,12 @@ export function SalesPageClient() {
   const [clientName, setClientName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState<Sale | null>(null);
+  const [editingSale, setEditingSale] = useState<Sale | null>(null);
 
   const [customOpen, setCustomOpen] = useState(false);
   const [customName, setCustomName] = useState("");
   const [customPrice, setCustomPrice] = useState("");
+  const [customCost, setCustomCost] = useState("");
   const [customQty, setCustomQty] = useState("1");
 
   async function load() {
@@ -93,6 +97,7 @@ export function SalesPageClient() {
           key: product.id,
           name: product.name,
           unitPriceCents: product.sale_price_cents,
+          costCents: product.cost_price_cents,
           quantity: 1,
           productId: product.id,
           maxStock: product.stock_qty,
@@ -105,6 +110,7 @@ export function SalesPageClient() {
   function addCustomItem() {
     if (!customName.trim()) return;
     const priceCents = Math.round((parseFloat(customPrice || "0") || 0) * 100);
+    const costCents = Math.round((parseFloat(customCost || "0") || 0) * 100);
     const qty = Math.max(1, parseInt(customQty || "1", 10) || 1);
     setCart((prev) => [
       ...prev,
@@ -112,6 +118,7 @@ export function SalesPageClient() {
         key: `custom-${Date.now()}`,
         name: customName.trim(),
         unitPriceCents: priceCents,
+        costCents,
         quantity: qty,
         productId: null,
         maxStock: null,
@@ -119,6 +126,7 @@ export function SalesPageClient() {
     ]);
     setCustomName("");
     setCustomPrice("");
+    setCustomCost("");
     setCustomQty("1");
     setCustomOpen(false);
   }
@@ -155,6 +163,7 @@ export function SalesPageClient() {
               quantity: l.quantity,
               custom_name: l.name,
               custom_price_cents: l.unitPriceCents,
+              custom_cost_cents: l.costCents,
             }
       ),
     });
@@ -182,6 +191,22 @@ export function SalesPageClient() {
       load(); // refresca stock en el buscador de productos
     }
     setDeleting(null);
+  }
+
+  async function handleUpdateSale(payload: EditSalePayload) {
+    if (!editingSale) return;
+    const { error: err } = await supabase.rpc("update_sale", {
+      p_sale_id: editingSale.id,
+      p_client_name: payload.clientName || null,
+      p_items: payload.items,
+    });
+    if (err) {
+      toast({ title: "No se pudo guardar", description: err.message, variant: "danger" });
+      return;
+    }
+    toast({ title: "Venta actualizada", variant: "success" });
+    setEditingSale(null);
+    load();
   }
 
   return (
@@ -254,6 +279,7 @@ export function SalesPageClient() {
             <div className="mt-2.5 space-y-2 rounded-xl border border-line p-3 dark:border-line-dark">
               <p className="text-xs font-medium text-ink-muted dark:text-ink-dark-muted">
                 Para cosas que no llevas en inventario, como vidrios templados por encargo.
+                Registra el costo para saber tu ganancia real.
               </p>
               <Input
                 value={customName}
@@ -261,6 +287,16 @@ export function SalesPageClient() {
                 placeholder="Ej. Vidrio templado iPhone 13"
               />
               <div className="flex gap-2">
+                <Input
+                  type="number"
+                  min="0"
+                  step="1"
+                  inputMode="decimal"
+                  value={customCost}
+                  onChange={(e) => setCustomCost(e.target.value)}
+                  placeholder="Costo"
+                  className="flex-1"
+                />
                 <Input
                   type="number"
                   min="0"
@@ -394,6 +430,10 @@ export function SalesPageClient() {
               {sales.map((s) => {
                 const items = s.sale_items ?? [];
                 const summary = items.map((i) => `${i.quantity}× ${i.product_name}`).join(", ");
+                const profit = items.reduce(
+                  (sum, i) => sum + (i.unit_price_cents - i.unit_cost_cents) * i.quantity,
+                  0
+                );
                 return (
                   <li key={s.id} className="flex items-start justify-between gap-3 py-3">
                     <div className="min-w-0">
@@ -404,13 +444,20 @@ export function SalesPageClient() {
                         {summary || "—"}
                       </p>
                       <p className="text-xs text-ink-muted dark:text-ink-dark-muted">
-                        {formatDateTime(s.created_at)}
+                        {formatDateTime(s.created_at)} · Ganancia {formatCurrency(profit)}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       <span className="font-mono text-sm font-semibold text-ink dark:text-ink-dark">
                         {formatCurrency(s.total_cents)}
                       </span>
+                      <button
+                        onClick={() => setEditingSale(s)}
+                        aria-label="Editar venta"
+                        className="rounded-lg p-1.5 text-ink-muted hover:bg-black/5 dark:hover:bg-white/10"
+                      >
+                        <IconEdit width={14} height={14} />
+                      </button>
                       <button
                         onClick={() => setDeleting(s)}
                         disabled={!isAdmin}
@@ -427,6 +474,14 @@ export function SalesPageClient() {
           )}
         </Card>
       </div>
+
+      <EditSaleModal
+        key={editingSale?.id ?? "none"}
+        open={!!editingSale}
+        onClose={() => setEditingSale(null)}
+        onSubmit={handleUpdateSale}
+        sale={editingSale}
+      />
 
       <ConfirmDialog
         open={!!deleting}

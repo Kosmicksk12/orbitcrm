@@ -87,6 +87,7 @@ export function InventoryPageClient() {
       category: values.category.trim() || "General",
       detail: values.detail.trim() || null,
       sale_price_cents: Math.round((parseFloat(values.sale_price || "0") || 0) * 100),
+      cost_price_cents: Math.round((parseFloat(values.cost_price || "0") || 0) * 100),
       stock_qty: parseInt(values.stock_qty || "0", 10) || 0,
       low_stock_threshold: parseInt(values.low_stock_threshold || "0", 10) || 0,
     };
@@ -147,6 +148,7 @@ export function InventoryPageClient() {
       Categoría: p.category,
       Detalle: p.detail ?? "",
       "Precio de venta": p.sale_price_cents / 100,
+      Costo: p.cost_price_cents / 100,
       Stock: p.stock_qty,
       "Alerta si stock ≤": p.low_stock_threshold,
     }));
@@ -289,6 +291,7 @@ export function InventoryPageClient() {
                   <th className="px-5 py-3 font-medium">Producto</th>
                   <th className="px-3 py-3 font-medium">Categoría</th>
                   <th className="px-3 py-3 font-medium">Detalle</th>
+                  <th className="px-3 py-3 font-medium">Costo</th>
                   <th className="px-3 py-3 font-medium">Venta</th>
                   <th className="px-3 py-3 font-medium">Stock</th>
                   <th className="px-3 py-3 font-medium text-right">Acciones</th>
@@ -305,6 +308,9 @@ export function InventoryPageClient() {
                     </td>
                     <td className="px-3 py-3 text-ink-muted dark:text-ink-dark-muted">{p.category}</td>
                     <td className="px-3 py-3 text-ink-muted dark:text-ink-dark-muted">{p.detail || "—"}</td>
+                    <td className="px-3 py-3 font-mono text-ink-muted dark:text-ink-dark-muted">
+                      {p.cost_price_cents > 0 ? formatCurrency(p.cost_price_cents) : "—"}
+                    </td>
                     <td className="px-3 py-3 font-mono text-ink dark:text-ink-dark">
                       {p.sale_price_cents > 0 ? formatCurrency(p.sale_price_cents) : "—"}
                     </td>

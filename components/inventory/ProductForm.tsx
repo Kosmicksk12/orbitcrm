@@ -12,6 +12,7 @@ export interface ProductFormValues {
   category: string;
   detail: string;
   sale_price: string;
+  cost_price: string;
   stock_qty: string;
   low_stock_threshold: string;
 }
@@ -22,6 +23,7 @@ const EMPTY: ProductFormValues = {
   category: "",
   detail: "",
   sale_price: "",
+  cost_price: "",
   stock_qty: "0",
   low_stock_threshold: "5",
 };
@@ -47,6 +49,7 @@ export function ProductForm({
           category: product.category,
           detail: product.detail ?? "",
           sale_price: (product.sale_price_cents / 100).toString(),
+          cost_price: (product.cost_price_cents / 100).toString(),
           stock_qty: product.stock_qty.toString(),
           low_stock_threshold: product.low_stock_threshold.toString(),
         }
@@ -128,7 +131,19 @@ export function ProductForm({
           />
         </FieldWrapper>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
+          <FieldWrapper label="Costo" htmlFor="cost_price" hint="Lo que te cuesta a ti">
+            <Input
+              id="cost_price"
+              type="number"
+              min="0"
+              step="1"
+              inputMode="decimal"
+              value={values.cost_price}
+              onChange={(e) => update("cost_price", e.target.value)}
+              placeholder="8000"
+            />
+          </FieldWrapper>
           <FieldWrapper label="Precio de venta" htmlFor="sale_price">
             <Input
               id="sale_price"
@@ -141,6 +156,9 @@ export function ProductForm({
               placeholder="14000"
             />
           </FieldWrapper>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
           <FieldWrapper label="Stock inicial" htmlFor="stock_qty">
             <Input
               id="stock_qty"

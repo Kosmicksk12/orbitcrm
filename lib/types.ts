@@ -72,6 +72,7 @@ export interface InventoryProduct {
   category: string;
   detail: string | null;
   sale_price_cents: number;
+  cost_price_cents: number;
   stock_qty: number;
   low_stock_threshold: number;
   created_at: string;
@@ -84,6 +85,7 @@ export interface SaleItem {
   product_id: string | null;
   product_name: string;
   unit_price_cents: number;
+  unit_cost_cents: number;
   quantity: number;
   subtotal_cents: number;
 }
