@@ -5,9 +5,9 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { ErrorState, Skeleton } from "@/components/ui/States";
-import { IconArrowLeft, IconPrinter, IconShield } from "@/components/ui/Icons";
+import { IconArrowLeft, IconPrinter, IconShield, IconWhatsapp } from "@/components/ui/Icons";
 import type { ServiceOrder } from "@/lib/types";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { buildWhatsAppLink, formatCurrency, formatDate } from "@/lib/utils";
 
 export function WarrantyClient({ orderId }: { orderId: string }) {
   const supabase = createClient();
@@ -62,6 +62,13 @@ export function WarrantyClient({ orderId }: { orderId: string }) {
   const warrantyExpires = new Date(order.created_at);
   warrantyExpires.setDate(warrantyExpires.getDate() + order.warranty_days);
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+  const publicLink = `${siteUrl}/garantia/${order.id}`;
+  const whatsappLink = buildWhatsAppLink(
+    order.client_phone,
+    `Hola ${order.client_name}, aquí está el comprobante de garantía de tu equipo (${device}): ${publicLink}`
+  );
+
   return (
     <div className="mx-auto max-w-xl p-4 sm:p-6">
       <div className="no-print mb-4 flex items-center justify-between">
@@ -72,10 +79,21 @@ export function WarrantyClient({ orderId }: { orderId: string }) {
           <IconArrowLeft width={16} height={16} />
           Volver a Órdenes
         </Link>
-        <Button onClick={() => window.print()}>
-          <IconPrinter width={16} height={16} />
-          Imprimir / Guardar PDF
-        </Button>
+        <div className="flex items-center gap-2">
+          <a
+            href={whatsappLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-line px-4 text-sm font-medium text-ink hover:bg-bg dark:border-line-dark dark:text-ink-dark dark:hover:bg-white/5"
+          >
+            <IconWhatsapp width={16} height={16} />
+            Enviar por WhatsApp
+          </a>
+          <Button onClick={() => window.print()}>
+            <IconPrinter width={16} height={16} />
+            Imprimir / Guardar PDF
+          </Button>
+        </div>
       </div>
 
       <div className="print-area rounded-2xl border border-line bg-surface p-8 shadow-card dark:border-line-dark dark:bg-surface-dark print:rounded-none print:border-0 print:p-0">

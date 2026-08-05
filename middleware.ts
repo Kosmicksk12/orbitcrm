@@ -16,6 +16,7 @@ function isPublicPath(pathname: string) {
   if (pathname.startsWith("/icons/")) return true;
   if (pathname.startsWith("/splash/")) return true;
   if (pathname.startsWith("/_next/")) return true;
+  if (pathname.startsWith("/garantia/")) return true;
   if (pathname === "/favicon.ico") return true;
   if (pathname === "/robots.txt") return true;
   return false;

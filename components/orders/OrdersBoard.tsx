@@ -19,10 +19,11 @@ import {
   IconPrinter,
   IconSearch,
   IconTrash,
+  IconWhatsapp,
   IconWrench,
 } from "@/components/ui/Icons";
 import { ORDER_STATUSES, type OrderStatus, type ServiceOrder } from "@/lib/types";
-import { cn, formatCurrency, formatDate } from "@/lib/utils";
+import { buildWhatsAppLink, cn, formatCurrency, formatDate } from "@/lib/utils";
 import { exportToExcel } from "@/lib/export";
 import { consumePendingSearch } from "@/lib/searchBridge";
 
@@ -418,6 +419,23 @@ export function OrdersBoard() {
                         <td className="px-3 py-3">
                           <div className="flex justify-end gap-1">
                             <a
+                              href={buildWhatsAppLink(
+                                o.client_phone,
+                                `Hola ${o.client_name}, te escribo por tu orden ${o.order_number}${
+                                  o.device_brand || o.device_model
+                                    ? ` (${[o.device_brand, o.device_model].filter(Boolean).join(" ")})`
+                                    : ""
+                                }.`
+                              )}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              aria-label={`Chatear por WhatsApp con ${o.client_name}`}
+                              className="rounded-lg p-2 text-ink-muted hover:bg-accent-50 hover:text-accent dark:hover:bg-accent/10"
+                            >
+                              <IconWhatsapp width={16} height={16} />
+                            </a>
+                            <a
                               href={`/orders/${o.id}/warranty`}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -506,6 +524,21 @@ export function OrdersBoard() {
                               {o.order_number}
                             </span>
                             <div className="flex shrink-0 items-center gap-0.5 opacity-0 group-hover:opacity-100">
+                              <a
+                                href={buildWhatsAppLink(
+                                  o.client_phone,
+                                  `Hola ${o.client_name}, te escribo por tu orden ${o.order_number}${
+                                    device ? ` (${device})` : ""
+                                  }.`
+                                )}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                aria-label={`Chatear por WhatsApp con ${o.client_name}`}
+                                className="rounded-md p-1 text-ink-muted hover:bg-accent-50 hover:text-accent dark:hover:bg-accent/10"
+                              >
+                                <IconWhatsapp width={14} height={14} />
+                              </a>
                               <a
                                 href={`/orders/${o.id}/warranty`}
                                 target="_blank"
