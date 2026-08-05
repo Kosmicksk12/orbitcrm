@@ -12,6 +12,7 @@ import { EmptyState, ErrorState, SkeletonRow } from "@/components/ui/States";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ProductForm, type ProductFormValues } from "./ProductForm";
 import { ImportExcelModal } from "./ImportExcelModal";
+import { RequestedProductsCard } from "./RequestedProductsCard";
 import { IconAlertTriangle, IconBox, IconDownload, IconEdit, IconPlus, IconSearch, IconTrash, IconUpload } from "@/components/ui/Icons";
 import type { InventoryProduct } from "@/lib/types";
 import { cn, formatCurrency } from "@/lib/utils";
@@ -368,6 +369,8 @@ export function InventoryPageClient() {
             </table>
           )}
         </Card>
+
+        <RequestedProductsCard />
       </div>
 
       <ProductForm

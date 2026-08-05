@@ -204,3 +204,9 @@ export const IconTrendingUp = (p: SVGProps<SVGSVGElement>) => (
     <path d="M15 7h6v6" />
   </svg>
 );
+
+export const IconCheck = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <path d="M20 6L9 17l-5-5" />
+  </svg>
+);

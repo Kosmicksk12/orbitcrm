@@ -112,6 +112,20 @@ export interface Expense {
   updated_at: string;
 }
 
+export type RequestedProductStatus = "pendiente" | "comprado";
+
+export interface RequestedProduct {
+  id: string;
+  owner_id: string;
+  shop_id: string;
+  product_name: string;
+  client_name: string | null;
+  notes: string | null;
+  status: RequestedProductStatus;
+  created_at: string;
+  updated_at: string;
+}
+
 export const EXPENSE_CATEGORIES = [
   "Repuestos",
   "Insumos",
