@@ -10,35 +10,40 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Cool control-room palette. Deliberately not the cream/serif or
-        // black/neon defaults: a frosty slate ground with one confident
-        // indigo accent used only for actionable elements.
+        // Bordered-soft (light) + dark-minimal (dark) palette. Corporate
+        // blue accent on light, cool celeste accent on dark. `nav` is the
+        // dedicated navy sidebar surface — deliberately distinct from
+        // `surface` so the shell reads as a signature element.
         bg: {
-          DEFAULT: "#EEF1F6",
-          dark: "#0B1220",
+          DEFAULT: "#F1F3F9",
+          dark: "#080B12",
         },
         surface: {
           DEFAULT: "#FFFFFF",
-          dark: "#111A2E",
+          dark: "#0F1420",
+        },
+        nav: {
+          DEFAULT: "#121A2E",
+          dark: "#0B0F19",
         },
         ink: {
-          DEFAULT: "#101828",
+          DEFAULT: "#0F1729",
           dim: "#3D4557",
           muted: "#5B6478",
-          dark: "#E7EAF3",
-          "dark-muted": "#8C97B3",
+          dark: "#E9ECF5",
+          "dark-muted": "#8892AB",
         },
         line: {
-          DEFAULT: "#DEE3ED",
-          dark: "#232D45",
+          DEFAULT: "#D7DCE8",
+          dark: "#1B2333",
         },
         accent: {
-          50: "#EEF0FF",
-          100: "#D9DEFF",
-          400: "#5B67FF",
-          DEFAULT: "#3B45F0",
-          600: "#2F39D6",
-          700: "#242CAA",
+          50: "#EAF0FF",
+          100: "#CBDAFF",
+          400: "#5FC7F0",
+          DEFAULT: "#2647E0",
+          600: "#1B37BE",
+          700: "#162C97",
         },
         success: { DEFAULT: "#15803D", soft: "#DCFCE7" },
         warning: { DEFAULT: "#B45309", soft: "#FEF3C7" },
@@ -54,9 +59,10 @@ const config: Config = {
         "2xl": "20px",
       },
       boxShadow: {
-        card: "0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06)",
-        raised: "0 4px 12px rgba(16, 24, 40, 0.08), 0 2px 4px rgba(16, 24, 40, 0.04)",
-        popover: "0 12px 32px rgba(16, 24, 40, 0.16)",
+        card: "0 1px 2px rgba(15, 23, 41, 0.06), 0 2px 6px rgba(15, 23, 41, 0.06)",
+        raised: "0 6px 16px rgba(15, 23, 41, 0.10), 0 2px 4px rgba(15, 23, 41, 0.06)",
+        popover: "0 12px 32px rgba(15, 23, 41, 0.18)",
+        button: "0 1px 2px rgba(15, 23, 41, 0.06), 0 2px 8px rgba(38, 71, 224, 0.24)",
       },
       keyframes: {
         "fade-in": { from: { opacity: "0" }, to: { opacity: "1" } },

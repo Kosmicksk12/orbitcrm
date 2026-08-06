@@ -14,11 +14,11 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const VARIANT_STYLES: Record<Variant, string> = {
   primary:
-    "bg-accent text-white hover:bg-accent-600 active:bg-accent-700 disabled:bg-accent/50",
+    "bg-accent text-white shadow-button hover:bg-accent-600 active:bg-accent-700 disabled:bg-accent/50 disabled:shadow-none",
   secondary:
-    "bg-surface dark:bg-surface-dark border border-line dark:border-line-dark text-ink dark:text-ink-dark hover:bg-bg dark:hover:bg-white/5",
+    "bg-surface dark:bg-surface-dark border border-line dark:border-line-dark text-ink dark:text-ink-dark shadow-card hover:bg-bg hover:border-line dark:hover:bg-white/5",
   ghost: "text-ink dark:text-ink-dark hover:bg-black/5 dark:hover:bg-white/10",
-  danger: "bg-danger text-white hover:bg-danger/90 disabled:bg-danger/50",
+  danger: "bg-danger text-white shadow-card hover:bg-danger/90 disabled:bg-danger/50",
 };
 
 const SIZE_STYLES: Record<Size, string> = {
@@ -34,9 +34,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || loading}
         className={cn(
-          "inline-flex select-none items-center justify-center rounded-xl font-medium transition-colors duration-150",
+          "inline-flex select-none items-center justify-center rounded-xl font-semibold transition-all duration-150 active:scale-[0.98]",
           "focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2",
-          "disabled:cursor-not-allowed",
+          "disabled:cursor-not-allowed disabled:active:scale-100",
           VARIANT_STYLES[variant],
           SIZE_STYLES[size],
           className

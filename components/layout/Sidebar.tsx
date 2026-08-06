@@ -28,10 +28,10 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="no-print hidden w-64 shrink-0 border-r border-line bg-surface dark:border-line-dark dark:bg-surface-dark md:flex md:flex-col">
+    <aside className="no-print hidden w-64 shrink-0 bg-nav dark:bg-nav-dark dark:border-r dark:border-line-dark md:flex md:flex-col">
       <div className="flex h-16 items-center gap-2.5 px-6">
         <Logo size={32} />
-        <span className="font-display text-lg font-semibold tracking-tight text-ink dark:text-ink-dark">
+        <span className="font-display text-lg font-semibold tracking-tight text-white">
           OrbitCRM
         </span>
       </div>
@@ -46,10 +46,10 @@ export function Sidebar() {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-xl border-l-2 px-3 py-2.5 text-sm font-medium transition-colors",
                 active
-                  ? "bg-accent-50 text-accent-700 dark:bg-accent/15 dark:text-accent-400"
-                  : "text-ink-muted hover:bg-bg dark:text-ink-dark-muted dark:hover:bg-white/5"
+                  ? "border-accent-400 bg-white/10 text-white"
+                  : "border-transparent text-white/60 hover:bg-white/5 hover:text-white/90"
               )}
             >
               <Icon width={18} height={18} className="shrink-0" />
@@ -59,7 +59,7 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="border-t border-line p-3 text-xs text-ink-muted dark:border-line-dark dark:text-ink-dark-muted">
+      <div className="border-t border-white/10 p-3 text-xs text-white/40">
         OrbitCRM v1.0
       </div>
     </aside>
