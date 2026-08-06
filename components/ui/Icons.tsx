@@ -216,3 +216,11 @@ export const IconChevronDown = (p: SVGProps<SVGSVGElement>) => (
     <path d="M6 9l6 6 6-6" />
   </svg>
 );
+
+export const IconMoreVertical = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)} fill="currentColor" stroke="none">
+    <circle cx="12" cy="5" r="1.6" />
+    <circle cx="12" cy="12" r="1.6" />
+    <circle cx="12" cy="19" r="1.6" />
+  </svg>
+);

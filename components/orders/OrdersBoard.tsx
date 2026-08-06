@@ -11,6 +11,7 @@ import { Card, Badge } from "@/components/ui/Primitives";
 import { EmptyState, ErrorState, Skeleton, SkeletonRow } from "@/components/ui/States";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { OrderForm, type OrderFormValues } from "./OrderForm";
+import { ActionMenu } from "@/components/ui/ActionMenu";
 import {
   IconDownload,
   IconLayoutGrid,
@@ -416,7 +417,7 @@ export function OrdersBoard() {
                             ))}
                           </Select>
                         </td>
-                        <td className="px-3 py-3">
+                        <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
                           <div className="flex justify-end gap-1">
                             <a
                               href={buildWhatsAppLink(
@@ -429,34 +430,29 @@ export function OrdersBoard() {
                               )}
                               target="_blank"
                               rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
                               aria-label={`Chatear por WhatsApp con ${o.client_name}`}
                               className="rounded-lg p-2 text-ink-muted hover:bg-accent-50 hover:text-accent dark:hover:bg-accent/10"
                             >
                               <IconWhatsapp width={16} height={16} />
                             </a>
-                            <a
-                              href={`/orders/${o.id}/warranty`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              aria-label={`Imprimir garantía de ${o.order_number}`}
-                              className="rounded-lg p-2 text-ink-muted hover:bg-accent-50 hover:text-accent dark:hover:bg-accent/10"
-                            >
-                              <IconPrinter width={16} height={16} />
-                            </a>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleting(o);
-                              }}
-                              aria-label={`Eliminar ${o.order_number}`}
-                              className="rounded-lg p-2 text-ink-muted hover:bg-danger-soft hover:text-danger dark:hover:bg-danger/10 disabled:cursor-not-allowed disabled:opacity-30"
-                              disabled={!isAdmin}
-                              title={isAdmin ? undefined : "Solo un administrador puede eliminar órdenes"}
-                            >
-                              <IconTrash width={16} height={16} />
-                            </button>
+                            <ActionMenu
+                              label={`Más acciones para ${o.order_number}`}
+                              items={[
+                                {
+                                  label: "Imprimir garantía",
+                                  icon: <IconPrinter width={16} height={16} />,
+                                  onSelect: () => window.open(`/orders/${o.id}/warranty`, "_blank"),
+                                },
+                                {
+                                  label: "Eliminar orden",
+                                  icon: <IconTrash width={16} height={16} />,
+                                  danger: true,
+                                  disabled: !isAdmin,
+                                  disabledReason: "Solo un administrador puede eliminar órdenes",
+                                  onSelect: () => setDeleting(o),
+                                },
+                              ]}
+                            />
                           </div>
                         </td>
                       </tr>
@@ -539,27 +535,26 @@ export function OrdersBoard() {
                               >
                                 <IconWhatsapp width={14} height={14} />
                               </a>
-                              <a
-                                href={`/orders/${o.id}/warranty`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                aria-label={`Imprimir garantía de ${o.order_number}`}
-                                className="rounded-md p-1 text-ink-muted hover:bg-accent-50 hover:text-accent dark:hover:bg-accent/10"
-                              >
-                                <IconPrinter width={14} height={14} />
-                              </a>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setDeleting(o);
-                                }}
-                                aria-label={`Eliminar ${o.order_number}`}
-                                className="rounded-md p-1 text-ink-muted hover:bg-danger-soft hover:text-danger dark:hover:bg-danger/10 disabled:hidden"
-                                disabled={!isAdmin}
-                              >
-                                <IconTrash width={14} height={14} />
-                              </button>
+                              <div onClick={(e) => e.stopPropagation()}>
+                                <ActionMenu
+                                  label={`Más acciones para ${o.order_number}`}
+                                  items={[
+                                    {
+                                      label: "Imprimir garantía",
+                                      icon: <IconPrinter width={16} height={16} />,
+                                      onSelect: () => window.open(`/orders/${o.id}/warranty`, "_blank"),
+                                    },
+                                    {
+                                      label: "Eliminar orden",
+                                      icon: <IconTrash width={16} height={16} />,
+                                      danger: true,
+                                      disabled: !isAdmin,
+                                      disabledReason: "Solo un administrador puede eliminar órdenes",
+                                      onSelect: () => setDeleting(o),
+                                    },
+                                  ]}
+                                />
+                              </div>
                             </div>
                           </div>
                           <p className="mt-1.5 text-sm font-medium text-ink dark:text-ink-dark">
