@@ -21,6 +21,10 @@ exacta que ya tienen):
    antes.
 5. `components/layout/PageHeader.tsx` — títulos de página con más peso
    (`font-bold`) y tracking ajustado.
+6. `components/layout/MobileNav.tsx` — la barra inferior de navegación en
+   móvil ahora también es navy (antes se quedaba blanca porque el sidebar
+   navy está oculto en pantallas chicas). Así el celular tiene la misma
+   identidad que el escritorio.
 
 ## Qué NO cambió
 - Ningún archivo de `lib/`, `supabase/`, `hooks/`, ni las páginas de
