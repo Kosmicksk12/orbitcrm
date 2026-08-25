@@ -121,14 +121,12 @@ export function QuickPartsSearch() {
     router.push("/clients");
   }
 
-  if (typeof document === "undefined") return null;
-
   return (
     <>
       <button
         onClick={() => setOpen(true)}
         className="no-print flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-sm text-ink-muted transition-colors hover:bg-bg dark:border-line-dark dark:bg-surface-dark dark:text-ink-dark-muted dark:hover:bg-white/5"
-        aria-label="Buscar en OrbitCRM"
+        aria-label="Buscar en Danivo CRM"
       >
         <IconSearch width={15} height={15} />
         <span className="hidden sm:inline">Buscar repuesto, orden o cliente…</span>
@@ -149,7 +147,7 @@ export function QuickPartsSearch() {
             <div
               role="dialog"
               aria-modal="true"
-              aria-label="Buscar en OrbitCRM"
+              aria-label="Buscar en Danivo CRM"
               className="relative z-10 w-full max-w-xl animate-slide-up overflow-hidden rounded-2xl border border-line bg-surface shadow-popover dark:border-line-dark dark:bg-surface-dark"
             >
               <div className="flex items-center gap-2.5 border-b border-line px-4 py-3 dark:border-line-dark">

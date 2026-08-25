@@ -1,42 +1,54 @@
-# Rediseño visual OrbitCRM — qué cambió
+# Rediseño + rebranding a Danivo CRM — qué cambió
 
-5 archivos, solo estilos (clases de Tailwind y tokens de color). Ninguna
-línea de lógica, ningún componente movido de lugar, ninguna función tocada.
+25 archivos. Todo es CSS/clases de Tailwind, texto de marca, un ícono SVG
+y sus versiones PNG. Ninguna línea de lógica, ninguna consulta a
+Supabase, ningún componente movido de lugar.
 
 ## Cómo aplicarlo
-Reemplaza estos 5 archivos en tu proyecto por los de este zip (misma ruta
-exacta que ya tienen):
+Reemplaza cada archivo de este zip en tu proyecto por el de la misma ruta
+exacta (las rutas ya vienen organizadas igual que tu repo). Incluye
+archivos binarios (.png, .ico) — cópialos igual que los demás, no hay
+que hacer nada especial con ellos.
 
-1. `tailwind.config.ts` — paleta de colores nueva: fondo, superficie, línea
-   más definidos; azul corporativo `#2647E0` como acento en modo claro,
-   celeste `#5FC7F0` como acento en modo oscuro; nuevo color `nav` (navy
-   `#121A2E`) exclusivo para el sidebar; sombras más presentes.
-2. `app/layout.tsx` — solo se actualizó el color de la barra del navegador
-   (`themeColor`) para que coincida con los nuevos tonos. Nada más.
-3. `components/ui/Button.tsx` — botones con sombra propia, más peso
-   (`font-semibold`), y una micro-animación de escala al hacer clic
-   (`active:scale-[0.98]`) para que se sientan táctiles/premium.
-4. `components/layout/Sidebar.tsx` — sidebar ahora navy oscuro con barra
-   izquierda celeste en el ítem activo, en vez del fondo lila tenue de
-   antes.
-5. `components/layout/PageHeader.tsx` — títulos de página con más peso
-   (`font-bold`) y tracking ajustado.
-6. `components/layout/MobileNav.tsx` — la barra inferior de navegación en
-   móvil ahora también es navy (antes se quedaba blanca porque el sidebar
-   navy está oculto en pantallas chicas). Así el celular tiene la misma
-   identidad que el escritorio.
+### Bloque 1 — Paleta de colores y sidebar
+- `tailwind.config.ts` — fondo, superficie, línea, azul corporativo,
+  celeste en oscuro, navy para sidebar/nav, sombras.
+- `app/layout.tsx` — color de la barra del navegador (`themeColor`), más
+  metadatos de marca (ver bloque 2).
+- `components/ui/Button.tsx` — sombra y micro-animación en botones.
+- `components/layout/Sidebar.tsx` — sidebar navy con barra celeste activa.
+- `components/layout/PageHeader.tsx` — títulos con más peso.
+- `components/layout/MobileNav.tsx` — barra inferior navy en móvil.
 
-## Qué NO cambió
-- Ningún archivo de `lib/`, `supabase/`, `hooks/`, ni las páginas de
-  `app/(dashboard)/*` — toda tu lógica de datos, Supabase, cálculos y
-  rutas quedan exactamente igual.
-- `components/ui/Primitives.tsx` (Card, Badge, Avatar) y
-  `components/ui/Field.tsx` (inputs) no se tocaron — como ya usaban los
-  tokens de color del `tailwind.config.ts`, heredan el nuevo estilo
-  automáticamente sin necesidad de editarlos.
-- `components/layout/Topbar.tsx` y `MobileNav.tsx` tampoco se tocaron por
-  el mismo motivo.
+### Bloque 2 — Rebranding "OrbitCRM" → "Danivo CRM"
+- `components/ui/Logo.tsx` — ícono nuevo: arcos concéntricos de "flujo"
+  que forman una D (concepto Digital Flow), en vez de la órbita anterior.
+  Este SVG es la fuente original de la que se generaron todos los PNG.
+- `components/layout/Topbar.tsx` y `app/(auth)/login/page.tsx` —
+  wordmark "OrbitCRM" → "Danivo" (junto al ícono).
+- `components/layout/Sidebar.tsx` — wordmark y pie de página
+  ("Danivo CRM v1.0").
+- `app/layout.tsx` — título de pestaña, descripción SEO,
+  `applicationName` → "Danivo CRM".
+- `public/manifest.webmanifest` — nombre de la PWA + colores del splash
+  screen.
+- `components/orders/WarrantyClient.tsx`, `app/garantia/[id]/page.tsx`,
+  `components/pwa/InstallPrompt.tsx`, `components/pwa/ServiceWorkerRegister.tsx`,
+  `components/settings/TeamSettings.tsx`, `components/settings/SettingsClient.tsx`,
+  `components/inventory/QuickPartsSearch.tsx` — menciones sueltas de
+  "OrbitCRM" en textos de la interfaz.
+
+### Bloque 3 — Íconos nuevos (rediseño de alto impacto: degradado + glow)
+Todos con el mismo diseño del logo, sobre fondo azul corporativo
+`#2647E0`:
+- `public/favicon.ico` (16/32px, pestaña del navegador)
+- `public/icons/favicon-16.png`, `favicon-32.png`
+- `public/icons/icon-192.png`, `icon-512.png` (PWA estándar)
+- `public/icons/icon-maskable-192.png`, `icon-maskable-512.png` (Android,
+  con margen de seguridad para que el sistema no recorte el ícono)
+- `public/icons/apple-touch-icon.png` (180px, iOS "agregar a inicio")
 
 ## Después de reemplazar los archivos
-Solo corre tu proyecto como siempre (`npm run dev` o `npm run build`). No
-hace falta instalar nada nuevo ni migrar datos.
+npm run dev como siempre. Sin instalar nada nuevo. Si tu navegador te
+sigue mostrando el favicon viejo, es caché — recarga con Ctrl+Shift+R
+(o borra caché del sitio).

@@ -279,7 +279,7 @@ export function TeamSettings() {
                 </Button>
               </div>
               <p className="mt-2 text-xs text-ink-muted dark:text-ink-dark-muted">
-                Dile a esa persona que se registre en OrbitCRM usando exactamente este correo — entrará
+                Dile a esa persona que se registre en Danivo CRM usando exactamente este correo — entrará
                 directo a este taller con el rol que elegiste.
               </p>
             </form>

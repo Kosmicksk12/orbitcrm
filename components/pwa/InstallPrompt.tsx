@@ -82,7 +82,7 @@ export function InstallPrompt() {
         </div>
         <div className="flex-1">
           <p className="text-sm font-semibold text-ink dark:text-ink-dark">
-            Instala OrbitCRM
+            Instala Danivo CRM
           </p>
           {platform === "android" ? (
             <p className="mt-0.5 text-sm text-ink-muted dark:text-ink-dark-muted">

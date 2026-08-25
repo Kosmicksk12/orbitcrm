@@ -58,7 +58,7 @@ export function ServiceWorkerRegister() {
     if (!waitingWorker) return;
     toast({
       title: "Nueva versión disponible",
-      description: "Toca para actualizar OrbitCRM ahora.",
+      description: "Toca para actualizar Danivo CRM ahora.",
       variant: "default",
     });
     // Auto-activate after showing the toast; the controllerchange listener

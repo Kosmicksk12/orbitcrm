@@ -28,15 +28,20 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="no-print hidden w-64 shrink-0 bg-nav dark:bg-nav-dark dark:border-r dark:border-line-dark md:flex md:flex-col">
-      <div className="flex h-16 items-center gap-2.5 px-6">
+    <aside className="no-print relative hidden w-64 shrink-0 overflow-hidden bg-nav dark:bg-nav-dark dark:border-r dark:border-line-dark md:flex md:flex-col">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -left-16 -top-24 h-64 w-64 rounded-full bg-accent/25 blur-[90px]"
+      />
+
+      <div className="relative flex h-16 shrink-0 items-center gap-2.5 border-b border-white/[0.06] px-6">
         <Logo size={32} />
         <span className="font-display text-lg font-semibold tracking-tight text-white">
-          OrbitCRM
+          Danivo
         </span>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3 py-2">
+      <nav className="relative flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon;
@@ -46,21 +51,28 @@ export function Sidebar() {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-xl border-l-2 px-3 py-2.5 text-sm font-medium transition-colors",
+                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
                 active
-                  ? "border-accent-400 bg-white/10 text-white"
-                  : "border-transparent text-white/60 hover:bg-white/5 hover:text-white/90"
+                  ? "bg-gradient-to-r from-accent to-accent-600 text-white shadow-lg shadow-accent/30"
+                  : "text-white/55 hover:bg-white/[0.06] hover:text-white"
               )}
             >
-              <Icon width={18} height={18} className="shrink-0" />
+              <Icon
+                width={18}
+                height={18}
+                className={cn(
+                  "shrink-0 transition-transform",
+                  active ? "text-white" : "text-white/40 group-hover:text-white/80"
+                )}
+              />
               {item.label}
             </Link>
           );
         })}
       </nav>
 
-      <div className="border-t border-white/10 p-3 text-xs text-white/40">
-        OrbitCRM v1.0
+      <div className="relative border-t border-white/[0.06] px-4 py-3.5 text-xs font-medium tracking-wide text-white/30">
+        Danivo CRM v1.0
       </div>
     </aside>
   );

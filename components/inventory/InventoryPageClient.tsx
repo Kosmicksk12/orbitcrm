@@ -159,7 +159,7 @@ export function InventoryPageClient() {
       return;
     }
 
-    exportToExcel("inventario-orbitcrm", "Inventario", rows);
+    exportToExcel("inventario-danivo", "Inventario", rows);
     toast({ title: `${rows.length} productos exportados`, variant: "success" });
   }
 

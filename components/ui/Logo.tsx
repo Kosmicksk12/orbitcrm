@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 /**
- * The OrbitCRM mark: an elliptical orbit with a core dot (your business)
+ * The Danivo CRM mark: an elliptical orbit with a core dot (your business)
  * and a satellite dot (a client/contact orbiting it). Rendered as inline
  * SVG so it stays crisp at any size — this is the single source of truth
  * for the brand mark used in the sidebar, topbar and login screen. The

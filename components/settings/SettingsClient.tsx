@@ -136,7 +136,7 @@ export function SettingsClient() {
         <Card className="p-6">
           <h2 className="font-display text-base font-semibold text-ink dark:text-ink-dark">Apariencia</h2>
           <p className="mt-1 text-sm text-ink-muted dark:text-ink-dark-muted">
-            Elige cómo se ve OrbitCRM en este dispositivo.
+            Elige cómo se ve Danivo CRM en este dispositivo.
           </p>
           <div className="mt-4 grid grid-cols-3 gap-2">
             {(["light", "dark", "system"] as Theme[]).map((t) => (

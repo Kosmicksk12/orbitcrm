@@ -204,7 +204,7 @@ export function OrdersBoard() {
       return;
     }
 
-    exportToExcel("ordenes-orbitcrm", "Órdenes", rows);
+    exportToExcel("ordenes-danivo", "Órdenes", rows);
     toast({ title: `${rows.length} órdenes exportadas`, variant: "success" });
   }
 
@@ -470,7 +470,7 @@ export function OrdersBoard() {
                 <div
                   key={col.id}
                   className={cn(
-                    "w-72 shrink-0 rounded-2xl border border-transparent p-1 transition-colors",
+                    "w-72 shrink-0 rounded-2xl border border-transparent bg-black/5 p-2 transition-colors dark:bg-white/5",
                     dragOverStatus === col.id && "border-accent/40 bg-accent-50/60 dark:bg-accent/5"
                   )}
                   onDragOver={(e) => {

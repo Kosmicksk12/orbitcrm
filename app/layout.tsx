@@ -27,17 +27,17 @@ const mono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "OrbitCRM — Gestiona tus clientes",
-    template: "%s · OrbitCRM",
+    default: "Danivo CRM — Gestiona tus clientes",
+    template: "%s · Danivo CRM",
   },
   description:
-    "OrbitCRM es un CRM ligero para gestionar contactos, empresas y tu pipeline de negocios desde cualquier dispositivo.",
-  applicationName: "OrbitCRM",
+    "Danivo CRM es un CRM ligero para gestionar contactos, empresas y tu pipeline de negocios desde cualquier dispositivo.",
+  applicationName: "Danivo CRM",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "OrbitCRM",
+    title: "Danivo CRM",
   },
   formatDetection: { telephone: false },
   icons: {

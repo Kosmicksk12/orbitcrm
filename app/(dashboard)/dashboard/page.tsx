@@ -4,11 +4,20 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, Badge } from "@/components/ui/Primitives";
 import { EmptyState } from "@/components/ui/States";
 import { IconBox, IconCart, IconDeal, IconReceipt, IconTrendingUp, IconUsers, IconWrench } from "@/components/ui/Icons";
-import { ORDER_STATUSES, type Expense, type Sale, type ServiceOrder } from "@/lib/types";
-import { formatCurrency, formatRelativeTime } from "@/lib/utils";
+import { ORDER_STATUSES, type Expense, type OrderStatus, type Sale, type ServiceOrder } from "@/lib/types";
+import { cn, formatCurrency, formatRelativeTime } from "@/lib/utils";
 import { MonthCloseExport } from "@/components/dashboard/MonthCloseExport";
 
 export const metadata = { title: "Panel" };
+
+const STATUS_BAR_COLOR: Record<OrderStatus, string> = {
+  recibido: "bg-ink-muted dark:bg-ink-dark-muted",
+  diagnostico: "bg-accent",
+  en_reparacion: "bg-warning",
+  listo: "bg-success",
+  entregado: "bg-success",
+  pagada: "bg-success",
+};
 
 const MONTH_NAMES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -77,8 +86,14 @@ export default async function DashboardPage({
   const currentStats = [
     { label: "Reparaciones activas", value: activeOrders.length, icon: IconWrench, href: "/orders" },
     { label: "Clientes", value: uniqueClients, icon: IconUsers, href: "/clients" },
-    { label: "Saldo pendiente", value: formatCurrency(outstandingBalance), icon: IconDeal, href: "/orders" },
-    { label: "Stock bajo", value: lowStockCount, icon: IconBox, href: "/inventory" },
+    {
+      label: "Saldo pendiente",
+      value: formatCurrency(outstandingBalance),
+      icon: IconDeal,
+      href: "/orders",
+      alert: outstandingBalance > 0,
+    },
+    { label: "Stock bajo", value: lowStockCount, icon: IconBox, href: "/inventory", alert: lowStockCount > 0 },
   ];
 
   const monthStats = [
@@ -99,14 +114,28 @@ export default async function DashboardPage({
         <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {currentStats.map((s) => (
             <Link key={s.label} href={s.href}>
-              <Card className="p-5 transition-shadow hover:shadow-raised">
+              <Card className="p-5 transition-all hover:-translate-y-0.5 hover:shadow-raised">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-ink-muted dark:text-ink-dark-muted">
                     {s.label}
                   </span>
-                  <s.icon width={18} height={18} className="text-accent" />
+                  <div
+                    className={cn(
+                      "flex h-8 w-8 items-center justify-center rounded-lg",
+                      s.alert
+                        ? "bg-warning-soft text-warning dark:bg-warning/15"
+                        : "bg-accent-50 text-accent dark:bg-accent/15"
+                    )}
+                  >
+                    <s.icon width={16} height={16} />
+                  </div>
                 </div>
-                <p className="mt-3 font-mono text-2xl font-semibold text-ink dark:text-ink-dark">
+                <p
+                  className={cn(
+                    "mt-3 font-mono text-3xl font-semibold tracking-tight",
+                    s.alert ? "text-warning" : "text-ink dark:text-ink-dark"
+                  )}
+                >
                   {s.value}
                 </p>
               </Card>
@@ -160,14 +189,16 @@ export default async function DashboardPage({
         <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {monthStats.map((s) => (
             <Link key={s.label} href={s.href}>
-              <Card className="p-5 transition-shadow hover:shadow-raised">
+              <Card className="p-5 transition-all hover:-translate-y-0.5 hover:shadow-raised">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-ink-muted dark:text-ink-dark-muted">
                     {s.label}
                   </span>
-                  <s.icon width={18} height={18} className="text-accent" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-50 text-accent dark:bg-accent/15">
+                    <s.icon width={16} height={16} />
+                  </div>
                 </div>
-                <p className="mt-3 font-mono text-2xl font-semibold text-ink dark:text-ink-dark">
+                <p className="mt-3 font-mono text-3xl font-semibold tracking-tight text-ink dark:text-ink-dark">
                   {s.value}
                 </p>
               </Card>
@@ -184,12 +215,13 @@ export default async function DashboardPage({
           <div className="mt-4 space-y-3">
             {statusCounts.map((s) => (
               <div key={s.id} className="flex items-center gap-3">
-                <span className="w-24 shrink-0 text-xs font-medium text-ink-muted dark:text-ink-dark-muted">
-                  {s.label}
+                <span className="flex w-24 shrink-0 items-center gap-1.5 text-xs font-medium text-ink-muted dark:text-ink-dark-muted">
+                  <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", STATUS_BAR_COLOR[s.id])} />
+                  <span className="truncate">{s.label}</span>
                 </span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-bg dark:bg-white/5">
                   <div
-                    className="h-full rounded-full bg-accent"
+                    className={cn("h-full rounded-full transition-all", STATUS_BAR_COLOR[s.id])}
                     style={{ width: `${(s.count / maxStatusCount) * 100}%` }}
                   />
                 </div>

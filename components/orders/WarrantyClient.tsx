@@ -100,7 +100,7 @@ export function WarrantyClient({ orderId }: { orderId: string }) {
         <div className="flex items-start justify-between border-b border-line pb-5 dark:border-line-dark">
           <div>
             <p className="font-display text-lg font-semibold text-ink dark:text-ink-dark">
-              {shopName || "OrbitCRM"}
+              {shopName || "Danivo CRM"}
             </p>
             <p className="text-sm text-ink-muted dark:text-ink-dark-muted">Comprobante de garantía</p>
           </div>

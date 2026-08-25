@@ -122,7 +122,7 @@ export function ExpensesPageClient() {
       toast({ title: "No hay gastos para exportar", variant: "danger" });
       return;
     }
-    exportToExcel("gastos-orbitcrm", "Gastos", rows);
+    exportToExcel("gastos-danivo", "Gastos", rows);
     toast({ title: `${rows.length} gastos exportados`, variant: "success" });
   }
 

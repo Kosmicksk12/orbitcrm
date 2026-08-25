@@ -39,7 +39,7 @@ export function Topbar({ userEmail, userName }: { userEmail: string; userName: s
       <div className="flex items-center gap-2 md:hidden">
         <Logo size={32} />
         <span className="font-display text-base font-semibold text-ink dark:text-ink-dark">
-          OrbitCRM
+          Danivo
         </span>
       </div>
 
