@@ -17,8 +17,9 @@ interface PublicWarranty {
   shop_name: string | null;
 }
 
-export default async function PublicWarrantyPage({ params }: { params: { id: string } }) {
-  const supabase = createClient();
+export default async function PublicWarrantyPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_public_warranty", { p_order_id: params.id }).maybeSingle();
   const warranty = data as PublicWarranty | null;
 

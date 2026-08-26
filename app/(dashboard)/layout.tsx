@@ -8,7 +8,7 @@ import { ShopProvider } from "@/components/shop/ShopContext";
 import type { ShopRole } from "@/lib/types";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

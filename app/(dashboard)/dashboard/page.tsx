@@ -35,12 +35,13 @@ function formatMonthLabel(monthKey: string): string {
   return `${MONTH_NAMES[m - 1]} ${y}`;
 }
 
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams?: { month?: string };
-}) {
-  const supabase = createClient();
+export default async function DashboardPage(
+  props: {
+    searchParams?: Promise<{ month?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
 
   const [{ data }, { data: inventory }, { data: salesData }, { data: expensesData }] = await Promise.all([
     supabase.from("service_orders").select("*").order("created_at", { ascending: false }),

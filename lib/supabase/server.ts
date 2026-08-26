@@ -7,8 +7,8 @@ import { getSupabaseEnv } from "./env";
  * Route Handlers. Session cookies are read/written through Next's cookies()
  * API so auth state stays in sync between server and client.
  */
-export function createClient() {
-  const cookieStore = cookies();
+export async function createClient() {
+  const cookieStore = await cookies();
   const { url, key } = getSupabaseEnv();
 
   return createServerClient(url, key, {
