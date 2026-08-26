@@ -1,4 +1,4 @@
-# OrbitCRM
+# Danivo CRM
 
 CRM ligero y production-ready construido con Next.js 14 (App Router), TypeScript, Tailwind CSS y Supabase. Funciona como sitio web y como PWA instalable en iOS, Android y escritorio desde una única base de código.
 
@@ -55,7 +55,7 @@ Abre [http://localhost:3000](http://localhost:3000). Crea una cuenta desde `/log
 
 ## 6. Probar la instalación como PWA
 
-- **Android / Chrome / Edge (desktop):** abre el sitio, espera el banner "Instala OrbitCRM" o usa el ícono de instalación en la barra de direcciones.
+- **Android / Chrome / Edge (desktop):** abre el sitio, espera el banner "Instala Danivo CRM" o usa el ícono de instalación en la barra de direcciones.
 - **iPhone / Safari:** abre el sitio en Safari (no en la app de Chrome para iOS, que no soporta instalación), toca **Compartir** → **Añadir a pantalla de inicio**. El banner en la app te lo recuerda automáticamente.
 - Verifica que abre en pantalla completa (sin barra del navegador), respeta el notch/home indicator, y que el ícono se ve correctamente en la pantalla de inicio.
 - Para probar el modo offline: instala la app, ábrela, luego activa "modo avión". Las páginas ya visitadas deben seguir cargando desde caché; las nuevas mostrarán una pantalla de "sin conexión" elegante en vez de un error del navegador.

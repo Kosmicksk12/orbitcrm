@@ -1,4 +1,4 @@
-// OrbitCRM service worker
+// Danivo CRM service worker
 // Strategy:
 //  - App shell / static assets (icons, manifest, offline page): cache-first
 //  - Next.js built assets (/_next/static/*): cache-first (immutable, hashed filenames)

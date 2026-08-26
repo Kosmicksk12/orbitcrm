@@ -39,8 +39,12 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-bg px-4 dark:bg-bg-dark">
-      <div className="w-full max-w-sm">
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-bg px-4 dark:bg-bg-dark">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-accent/20 blur-[110px] dark:bg-accent/25"
+      />
+      <div className="relative w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-3 text-center">
           <Logo size={44} />
           <div>
