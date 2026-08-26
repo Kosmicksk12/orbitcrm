@@ -24,11 +24,18 @@ export function MobileNav() {
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors",
-              active ? "text-accent-400" : "text-white/50"
+              "flex flex-1 flex-col items-center gap-1 py-2 text-[11px] font-medium transition-colors",
+              active ? "text-white" : "text-white/50"
             )}
           >
-            <Icon width={22} height={22} />
+            <span
+              className={cn(
+                "flex h-7 w-11 items-center justify-center rounded-full transition-all",
+                active && "bg-gradient-to-r from-accent to-accent-600 shadow-md shadow-accent/30"
+              )}
+            >
+              <Icon width={20} height={20} />
+            </span>
             {item.label}
           </Link>
         );
