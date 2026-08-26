@@ -59,7 +59,7 @@ export function Modal({ open, onClose, title, description, children, size = "md"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <h2 id="modal-title" className="text-lg font-semibold text-ink dark:text-ink-dark">
+            <h2 id="modal-title" className="font-display text-xl font-semibold tracking-tight text-ink dark:text-ink-dark">
               {title}
             </h2>
             {description && (
@@ -69,7 +69,7 @@ export function Modal({ open, onClose, title, description, children, size = "md"
           <button
             onClick={onClose}
             aria-label="Cerrar"
-            className="shrink-0 rounded-lg p-1.5 text-ink-muted hover:bg-black/5 dark:hover:bg-white/10"
+            className="shrink-0 rounded-full p-2 text-ink-muted transition-colors hover:bg-black/5 hover:text-ink dark:hover:bg-white/10 dark:hover:text-ink-dark"
           >
             ✕
           </button>

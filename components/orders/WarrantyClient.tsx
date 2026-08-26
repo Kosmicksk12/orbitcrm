@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { ErrorState, Skeleton } from "@/components/ui/States";
 import { IconArrowLeft, IconPrinter, IconShield, IconWhatsapp } from "@/components/ui/Icons";
 import type { ServiceOrder } from "@/lib/types";
-import { buildWhatsAppLink, formatCurrency, formatDate } from "@/lib/utils";
+import { buildWhatsAppLink, cn, formatCurrency, formatDate } from "@/lib/utils";
 
 export function WarrantyClient({ orderId }: { orderId: string }) {
   const supabase = createClient();
@@ -61,6 +61,7 @@ export function WarrantyClient({ orderId }: { orderId: string }) {
   const balance = order.total_cents - order.paid_cents;
   const warrantyExpires = new Date(order.created_at);
   warrantyExpires.setDate(warrantyExpires.getDate() + order.warranty_days);
+  const isActive = warrantyExpires.getTime() > Date.now();
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
   const publicLink = `${siteUrl}/garantia/${order.id}`;
@@ -96,81 +97,105 @@ export function WarrantyClient({ orderId }: { orderId: string }) {
         </div>
       </div>
 
-      <div className="print-area rounded-2xl border border-line bg-surface p-8 shadow-card dark:border-line-dark dark:bg-surface-dark print:rounded-none print:border-0 print:p-0">
-        <div className="flex items-start justify-between border-b border-line pb-5 dark:border-line-dark">
+      <div className="print-area overflow-hidden rounded-2xl border border-line bg-surface shadow-card dark:border-line-dark dark:bg-surface-dark print:rounded-none print:border-0">
+        <div
+          className="flex items-center justify-between bg-gradient-to-r from-accent to-accent-600 px-6 py-6 text-white sm:px-8 print:px-0"
+          style={{ WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}
+        >
           <div>
-            <p className="font-display text-lg font-semibold text-ink dark:text-ink-dark">
-              {shopName || "Danivo CRM"}
-            </p>
-            <p className="text-sm text-ink-muted dark:text-ink-dark-muted">Comprobante de garantía</p>
+            <p className="font-display text-lg font-semibold">{shopName || "Danivo CRM"}</p>
+            <p className="text-sm text-white/75">Comprobante de garantía</p>
           </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-50 text-accent dark:bg-accent/15">
-            <IconShield width={22} height={22} />
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15">
+            <IconShield width={24} height={24} />
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p className="text-ink-muted dark:text-ink-dark-muted">N.º de orden</p>
-            <p className="font-mono font-medium text-ink dark:text-ink-dark">{order.order_number}</p>
-          </div>
-          <div>
-            <p className="text-ink-muted dark:text-ink-dark-muted">Fecha de ingreso</p>
-            <p className="font-medium text-ink dark:text-ink-dark">{formatDate(order.created_at)}</p>
-          </div>
-          <div>
-            <p className="text-ink-muted dark:text-ink-dark-muted">Cliente</p>
-            <p className="font-medium text-ink dark:text-ink-dark">{order.client_name}</p>
-          </div>
-          <div>
-            <p className="text-ink-muted dark:text-ink-dark-muted">Teléfono</p>
-            <p className="font-medium text-ink dark:text-ink-dark">{order.client_phone}</p>
-          </div>
-          <div>
-            <p className="text-ink-muted dark:text-ink-dark-muted">Equipo</p>
-            <p className="font-medium text-ink dark:text-ink-dark">{device}</p>
-          </div>
-          <div>
-            <p className="text-ink-muted dark:text-ink-dark-muted">Técnico</p>
-            <p className="font-medium text-ink dark:text-ink-dark">{order.technician || "—"}</p>
-          </div>
-        </div>
-
-        {order.problem_description && (
-          <div className="mt-5">
-            <p className="text-sm text-ink-muted dark:text-ink-dark-muted">Falla reportada</p>
-            <p className="mt-1 text-sm text-ink dark:text-ink-dark">{order.problem_description}</p>
-          </div>
-        )}
-
-        <div className="mt-5 rounded-xl bg-accent-50 p-4 dark:bg-accent/10">
+        <div className="p-6 sm:p-8 print:px-0">
           <div className="flex items-center justify-between">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium",
+                isActive
+                  ? "bg-success-soft text-success dark:bg-success/15"
+                  : "bg-danger-soft text-danger dark:bg-danger/15"
+              )}
+            >
+              <span className={cn("h-1.5 w-1.5 rounded-full", isActive ? "bg-success" : "bg-danger")} />
+              {isActive ? "Garantía activa" : "Garantía vencida"}
+            </span>
+            <span className="font-mono text-xs font-medium text-ink-muted dark:text-ink-dark-muted">
+              {order.order_number}
+            </span>
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-4 border-t border-line pt-5 text-sm dark:border-line-dark">
+            <div>
+              <p className="text-ink-muted dark:text-ink-dark-muted">Fecha de ingreso</p>
+              <p className="font-medium text-ink dark:text-ink-dark">{formatDate(order.created_at)}</p>
+            </div>
+            <div>
+              <p className="text-ink-muted dark:text-ink-dark-muted">Vence</p>
+              <p className="font-medium text-ink dark:text-ink-dark">
+                {formatDate(warrantyExpires.toISOString())}
+              </p>
+            </div>
+            <div>
+              <p className="text-ink-muted dark:text-ink-dark-muted">Cliente</p>
+              <p className="font-medium text-ink dark:text-ink-dark">{order.client_name}</p>
+            </div>
+            <div>
+              <p className="text-ink-muted dark:text-ink-dark-muted">Teléfono</p>
+              <p className="font-medium text-ink dark:text-ink-dark">{order.client_phone}</p>
+            </div>
+            <div>
+              <p className="text-ink-muted dark:text-ink-dark-muted">Equipo</p>
+              <p className="font-medium text-ink dark:text-ink-dark">{device}</p>
+            </div>
+            <div>
+              <p className="text-ink-muted dark:text-ink-dark-muted">Técnico</p>
+              <p className="font-medium text-ink dark:text-ink-dark">{order.technician || "—"}</p>
+            </div>
+          </div>
+
+          {order.problem_description && (
+            <div className="mt-5">
+              <p className="text-sm text-ink-muted dark:text-ink-dark-muted">Falla reportada</p>
+              <p className="mt-1 text-sm text-ink dark:text-ink-dark">{order.problem_description}</p>
+            </div>
+          )}
+
+          <div className="mt-5 rounded-xl bg-accent-50 p-4 dark:bg-accent/10">
             <p className="text-sm font-medium text-accent-700 dark:text-accent-400">
-              Garantía válida por {order.warranty_days} días
-            </p>
-            <p className="text-sm font-semibold text-accent-700 dark:text-accent-400">
-              Vence: {formatDate(warrantyExpires.toISOString())}
+              Garantía válida por {order.warranty_days} días desde la entrega
             </p>
           </div>
-        </div>
 
-        <div className="mt-5 flex items-center justify-between border-t border-line pt-5 text-sm dark:border-line-dark">
-          <span className="text-ink-muted dark:text-ink-dark-muted">Total</span>
-          <span className="font-mono font-semibold text-ink dark:text-ink-dark">
-            {formatCurrency(order.total_cents)}
-          </span>
-        </div>
-        <div className="mt-1 flex items-center justify-between text-sm">
-          <span className="text-ink-muted dark:text-ink-dark-muted">Saldo pendiente</span>
-          <span className="font-mono font-semibold text-ink dark:text-ink-dark">
-            {formatCurrency(balance)}
-          </span>
-        </div>
+          <div className="mt-5 space-y-1 rounded-xl border border-line p-4 dark:border-line-dark">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-ink-muted dark:text-ink-dark-muted">Total</span>
+              <span className="font-mono font-semibold text-ink dark:text-ink-dark">
+                {formatCurrency(order.total_cents)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-ink-muted dark:text-ink-dark-muted">Saldo pendiente</span>
+              <span
+                className={cn(
+                  "font-mono font-semibold",
+                  balance > 0 ? "text-warning" : "text-ink dark:text-ink-dark"
+                )}
+              >
+                {formatCurrency(balance)}
+              </span>
+            </div>
+          </div>
 
-        <p className="mt-8 text-center text-xs text-ink-muted dark:text-ink-dark-muted">
-          Esta garantía cubre defectos del repuesto o mano de obra relacionados con la reparación
-          descrita. No cubre daños por caídas, golpes o líquidos posteriores a la entrega.
-        </p>
+          <p className="mt-6 text-center text-xs text-ink-muted dark:text-ink-dark-muted">
+            Esta garantía cubre defectos del repuesto o mano de obra relacionados con la reparación
+            descrita. No cubre daños por caídas, golpes o líquidos posteriores a la entrega.
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -156,8 +156,10 @@ export function ClientsPageClient() {
                   <button
                     onClick={() => setSelectedPhone(c.client_phone)}
                     className={cn(
-                      "flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-bg dark:hover:bg-white/5",
-                      selected?.client_phone === c.client_phone && "bg-accent-50 dark:bg-accent/10"
+                      "flex w-full items-center gap-3 border-l-2 px-4 py-3.5 text-left transition-colors hover:bg-bg dark:hover:bg-white/5",
+                      selected?.client_phone === c.client_phone
+                        ? "border-accent bg-accent-50 dark:bg-accent/10"
+                        : "border-transparent"
                     )}
                   >
                     <Avatar name={c.client_name} />
@@ -198,7 +200,7 @@ export function ClientsPageClient() {
                     {selected.client_phone}
                   </div>
                 </div>
-                <div className="rounded-xl bg-ink px-4 py-3 text-right dark:bg-white/10">
+                <div className="rounded-xl bg-gradient-to-br from-ink to-ink-dim px-4 py-3 text-right shadow-lg shadow-ink/10 dark:from-white/10 dark:to-white/5">
                   <p className="text-xs text-white/60">Total gastado</p>
                   <p className="font-mono text-lg font-semibold text-white">
                     {formatCurrency(selected.total_spent_cents)}

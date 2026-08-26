@@ -28,7 +28,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <ShopProvider shopId={membership.shop_id} role={membership.role as ShopRole}>
-      <div className="flex min-h-dvh bg-bg dark:bg-bg-dark">
+      <div className="flex min-h-dvh bg-bg dark:bg-bg-dark print:bg-white">
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <Topbar userEmail={user.email ?? ""} userName={profile?.full_name ?? ""} />
