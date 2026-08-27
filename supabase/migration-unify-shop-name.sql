@@ -21,6 +21,12 @@
 --
 -- Esta migración es ADITIVA y segura: solo rellena shops.name donde está
 -- vacío. Corre esto completo en el SQL Editor de Supabase, una sola vez.
+--
+-- >>> CORRER JUNTO CON EL DEPLOY de este cambio de código. Sin esta
+-- >>> migración, los talleres que ya habían puesto su nombre en Ajustes
+-- >>> verán "Danivo CRM" en la garantía y "Sin nombre" en /admin hasta
+-- >>> que un admin reabra Ajustes y guarde. Los talleres nuevos no
+-- >>> necesitan nada: Ajustes ya escribe shops.name directo.
 -- ============================================================================
 
 -- 1. Rellenar shops.name desde el nombre que el dueño ya había guardado en
