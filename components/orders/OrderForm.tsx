@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Input, Textarea, Select, FieldWrapper } from "@/components/ui/Field";
 import { IconPrinter } from "@/components/ui/Icons";
 import { WhatsAppHistory } from "./WhatsAppHistory";
+import { OrderPhotos } from "./OrderPhotos";
 import { ORDER_STATUSES, type OrderStatus, type ServiceOrder } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
 
@@ -45,12 +46,14 @@ export function OrderForm({
   onSubmit,
   order,
   defaultStatus,
+  shopId,
 }: {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: OrderFormValues) => Promise<void>;
+  onSubmit: (values: OrderFormValues, stagedPhotos: File[]) => Promise<void>;
   order?: ServiceOrder | null;
   defaultStatus?: OrderStatus;
+  shopId: string;
 }) {
   const [values, setValues] = useState<OrderFormValues>(
     order
@@ -72,6 +75,7 @@ export function OrderForm({
   );
   const [errors, setErrors] = useState<{ client_name?: string; client_phone?: string }>({});
   const [loading, setLoading] = useState(false);
+  const [stagedPhotos, setStagedPhotos] = useState<File[]>([]);
 
   function update<K extends keyof OrderFormValues>(key: K, value: OrderFormValues[K]) {
     setValues((v) => ({ ...v, [key]: value }));
@@ -90,8 +94,11 @@ export function OrderForm({
     if (!validate()) return;
     setLoading(true);
     try {
-      await onSubmit(values);
-      if (!order) setValues({ ...EMPTY, status: defaultStatus ?? "recibido" });
+      await onSubmit(values, stagedPhotos);
+      if (!order) {
+        setValues({ ...EMPTY, status: defaultStatus ?? "recibido" });
+        setStagedPhotos([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -269,6 +276,16 @@ export function OrderForm({
           </FieldWrapper>
         </div>
 
+        {!order && (
+          <div className="border-t border-line pt-5 dark:border-line-dark">
+            <OrderPhotos
+              shopId={shopId}
+              stagedFiles={stagedPhotos}
+              onStagedChange={setStagedPhotos}
+            />
+          </div>
+        )}
+
         <div className="flex items-center justify-between gap-3 pt-1">
           {order ? (
             <a
@@ -295,9 +312,14 @@ export function OrderForm({
       </form>
 
       {order && (
-        <div className="mt-6 border-t border-line pt-5 dark:border-line-dark">
-          <WhatsAppHistory orderId={order.id} />
-        </div>
+        <>
+          <div className="mt-6 border-t border-line pt-5 dark:border-line-dark">
+            <OrderPhotos orderId={order.id} shopId={order.shop_id} />
+          </div>
+          <div className="mt-6 border-t border-line pt-5 dark:border-line-dark">
+            <WhatsAppHistory orderId={order.id} />
+          </div>
+        </>
       )}
     </Modal>
   );

@@ -114,6 +114,15 @@ export interface Expense {
   updated_at: string;
 }
 
+export interface OrderPhoto {
+  id: string;
+  owner_id: string;
+  shop_id: string;
+  order_id: string;
+  storage_path: string;
+  created_at: string;
+}
+
 export interface WhatsAppMessage {
   id: string;
   owner_id: string;

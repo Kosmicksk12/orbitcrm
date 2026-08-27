@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/States";
 import { IconRotateLeft, IconTrash } from "@/components/ui/Icons";
 import type { ServiceOrder } from "@/lib/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { deleteAllOrderPhotoFiles } from "@/lib/orderPhotos";
 
 /**
  * Órdenes movidas a la papelera (deleted_at no nulo). Se pueden restaurar
@@ -71,6 +72,9 @@ export function OrdersTrashModal({
     if (!deletingForever) return;
     const order = deletingForever;
     setBusyId(order.id);
+    // Los metadatos de fotos se van solos por el cascade; los archivos de
+    // Storage hay que limpiarlos a mano antes de que desaparezca la orden.
+    await deleteAllOrderPhotoFiles(supabase, order.id);
     const { error } = await supabase.from("service_orders").delete().eq("id", order.id);
     setBusyId(null);
     if (error) {

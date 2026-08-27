@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { ErrorState, Skeleton } from "@/components/ui/States";
 import { IconArrowLeft, IconPrinter, IconShield } from "@/components/ui/Icons";
 import { WhatsAppLink } from "@/components/orders/WhatsAppLink";
+import { OrderPhotos } from "@/components/orders/OrderPhotos";
 import type { ServiceOrder } from "@/lib/types";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { warrantyWhatsAppMessage } from "@/lib/whatsapp";
@@ -197,6 +198,10 @@ export function WarrantyClient({ orderId }: { orderId: string }) {
             descrita. No cubre daños por caídas, golpes o líquidos posteriores a la entrega.
           </p>
         </div>
+      </div>
+
+      <div className="no-print mt-6 rounded-2xl border border-line bg-surface p-5 shadow-card dark:border-line-dark dark:bg-surface-dark">
+        <OrderPhotos orderId={order.id} shopId={order.shop_id} />
       </div>
     </div>
   );

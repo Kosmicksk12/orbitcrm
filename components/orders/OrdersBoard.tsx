@@ -27,6 +27,7 @@ import {
 import { ORDER_STATUSES, type OrderStatus, type ServiceOrder } from "@/lib/types";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { orderWhatsAppMessage } from "@/lib/whatsapp";
+import { uploadOrderPhoto } from "@/lib/orderPhotos";
 import { exportToExcel } from "@/lib/export";
 import { consumePendingSearch } from "@/lib/searchBridge";
 
@@ -112,7 +113,7 @@ export function OrdersBoard() {
     [searched, statusFilter]
   );
 
-  async function handleSubmit(values: OrderFormValues) {
+  async function handleSubmit(values: OrderFormValues, stagedPhotos: File[]) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -144,14 +145,31 @@ export function OrdersBoard() {
       }
       toast({ title: "Orden actualizada", variant: "success" });
     } else {
-      const { error: err } = await supabase
+      const { data: created, error: err } = await supabase
         .from("service_orders")
-        .insert({ ...payload, owner_id: user.id, shop_id: shopId });
-      if (err) {
-        toast({ title: "No se pudo crear la orden", description: err.message, variant: "danger" });
+        .insert({ ...payload, owner_id: user.id, shop_id: shopId })
+        .select("id")
+        .single();
+      if (err || !created) {
+        toast({ title: "No se pudo crear la orden", description: err?.message, variant: "danger" });
         return;
       }
       toast({ title: "Orden creada", variant: "success" });
+
+      if (stagedPhotos.length > 0) {
+        let failed = 0;
+        for (const file of stagedPhotos) {
+          const ok = await uploadOrderPhoto(supabase, { shopId, orderId: created.id, file });
+          if (!ok) failed += 1;
+        }
+        if (failed > 0) {
+          toast({
+            title: `La orden se creó, pero ${failed} foto(s) no se subieron`,
+            description: "Puedes agregarlas editando la orden.",
+            variant: "danger",
+          });
+        }
+      }
     }
 
     setFormOpen(false);
@@ -650,6 +668,7 @@ export function OrdersBoard() {
         onSubmit={handleSubmit}
         order={editing}
         defaultStatus={defaultStatus}
+        shopId={shopId}
       />
 
       <ConfirmDialog
