@@ -24,7 +24,24 @@ function isPublicPath(pathname: string) {
   return false;
 }
 
+// Si Supabase Auth tarda más que esto, no bloqueamos el request: los layouts
+// y server components del área privada igual chequean la sesión al renderizar.
+// Así una latencia puntual de Supabase no se convierte en un 504 de Vercel.
+const AUTH_TIMEOUT_MS = 2500;
+const TIMED_OUT = Symbol("auth-timeout");
+
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const publicPath = isPublicPath(pathname);
+
+  // Solo necesitamos saber quién es el usuario para: (a) mandar a /login desde
+  // una ruta privada sin sesión, y (b) mandar a /dashboard desde /login con
+  // sesión. El resto (raíz, legales, garantía pública, assets) pasa directo.
+  const needsAuthCheck = (!publicPath && pathname !== "/") || pathname === "/login";
+  if (!needsAuthCheck) {
+    return NextResponse.next({ request: { headers: request.headers } });
+  }
+
   let response = NextResponse.next({ request: { headers: request.headers } });
 
   const { url, key } = getSupabaseEnv();
@@ -47,12 +64,25 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let outcome: Awaited<ReturnType<typeof supabase.auth.getUser>> | typeof TIMED_OUT;
+  try {
+    outcome = await Promise.race([
+      supabase.auth.getUser(),
+      new Promise<typeof TIMED_OUT>((resolve) =>
+        setTimeout(() => resolve(TIMED_OUT), AUTH_TIMEOUT_MS)
+      ),
+    ]);
+  } catch {
+    outcome = TIMED_OUT;
+  }
 
-  const { pathname } = request.nextUrl;
-  const publicPath = isPublicPath(pathname);
+  // Estado de sesión desconocido (timeout o error de red): dejamos pasar el
+  // request sin redirigir. Los guards del servidor siguen aplicando.
+  if (outcome === TIMED_OUT) {
+    return response;
+  }
+
+  const user = outcome.data.user;
 
   if (!user && !publicPath && pathname !== "/") {
     const redirectUrl = new URL("/login", request.url);
