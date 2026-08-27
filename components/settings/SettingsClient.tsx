@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/Primitives";
 import { Skeleton } from "@/components/ui/States";
 import { IconLogout } from "@/components/ui/Icons";
 import { TeamSettings } from "./TeamSettings";
+import { SubscriptionSettings } from "./SubscriptionSettings";
 
 type Theme = "system" | "light" | "dark";
 const THEME_KEY = "orbitcrm:theme";
@@ -132,6 +133,8 @@ export function SettingsClient() {
             </form>
           )}
         </Card>
+
+        <SubscriptionSettings />
 
         <Card className="p-6">
           <h2 className="font-display text-base font-semibold text-ink dark:text-ink-dark">Apariencia</h2>

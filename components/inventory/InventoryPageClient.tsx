@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useShop } from "@/components/shop/ShopContext";
 import { useToast } from "@/components/ui/Toaster";
+import { useWriteGuard } from "@/hooks/useWriteGuard";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Input, Select } from "@/components/ui/Field";
@@ -22,6 +23,7 @@ export function InventoryPageClient() {
   const supabase = createClient();
   const { shopId, isAdmin } = useShop();
   const { toast } = useToast();
+  const { readOnly } = useWriteGuard();
 
   const [products, setProducts] = useState<InventoryProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,6 +79,7 @@ export function InventoryPageClient() {
   const totalStock = products.reduce((sum, p) => sum + p.stock_qty, 0);
 
   async function handleSubmit(values: ProductFormValues) {
+    if (readOnly) return;
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -117,7 +120,7 @@ export function InventoryPageClient() {
   }
 
   async function handleDelete() {
-    if (!deleting) return;
+    if (!deleting || readOnly) return;
     const { error: err } = await supabase.from("inventory_products").delete().eq("id", deleting.id);
     if (err) {
       toast({ title: "No se pudo eliminar", description: err.message, variant: "danger" });
@@ -129,6 +132,7 @@ export function InventoryPageClient() {
   }
 
   async function adjustStock(product: InventoryProduct, delta: number) {
+    if (readOnly) return;
     const nextQty = Math.max(0, product.stock_qty + delta);
     const previous = products;
     setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, stock_qty: nextQty } : p)));
@@ -174,11 +178,12 @@ export function InventoryPageClient() {
               <IconDownload width={16} height={16} />
               <span className="hidden sm:inline">Exportar</span>
             </Button>
-            <Button variant="secondary" onClick={() => setImportOpen(true)}>
+            <Button variant="secondary" disabled={readOnly} onClick={() => setImportOpen(true)}>
               <IconUpload width={16} height={16} />
               Importar Excel
             </Button>
             <Button
+              disabled={readOnly}
               onClick={() => {
                 setEditing(null);
                 setFormOpen(true);
@@ -280,7 +285,7 @@ export function InventoryPageClient() {
               action={
                 !query &&
                 !category && (
-                  <Button size="sm" onClick={() => setFormOpen(true)}>
+                  <Button size="sm" disabled={readOnly} onClick={() => setFormOpen(true)}>
                     <IconPlus width={16} height={16} />
                     Agregar producto
                   </Button>
@@ -321,8 +326,9 @@ export function InventoryPageClient() {
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => adjustStock(p, -1)}
+                          disabled={readOnly}
                           aria-label={`Restar stock a ${p.name}`}
-                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-line text-ink-muted hover:bg-bg dark:border-line-dark dark:hover:bg-white/5"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-line text-ink-muted hover:bg-bg disabled:opacity-40 dark:border-line-dark dark:hover:bg-white/5"
                         >
                           −
                         </button>
@@ -336,8 +342,9 @@ export function InventoryPageClient() {
                         </span>
                         <button
                           onClick={() => adjustStock(p, 1)}
+                          disabled={readOnly}
                           aria-label={`Sumar stock a ${p.name}`}
-                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-line text-ink-muted hover:bg-bg dark:border-line-dark dark:hover:bg-white/5"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-line text-ink-muted hover:bg-bg disabled:opacity-40 dark:border-line-dark dark:hover:bg-white/5"
                         >
                           +
                         </button>
@@ -350,8 +357,9 @@ export function InventoryPageClient() {
                             setEditing(p);
                             setFormOpen(true);
                           }}
+                          disabled={readOnly}
                           aria-label={`Editar ${p.name}`}
-                          className="rounded-lg p-2 text-ink-muted hover:bg-black/5 dark:hover:bg-white/10"
+                          className="rounded-lg p-2 text-ink-muted hover:bg-black/5 disabled:hidden dark:hover:bg-white/10"
                         >
                           <IconEdit width={16} height={16} />
                         </button>
@@ -359,7 +367,7 @@ export function InventoryPageClient() {
                           onClick={() => setDeleting(p)}
                           aria-label={`Eliminar ${p.name}`}
                           className="rounded-lg p-2 text-ink-muted hover:bg-danger-soft hover:text-danger dark:hover:bg-danger/10 disabled:hidden"
-                          disabled={!isAdmin}
+                          disabled={!isAdmin || readOnly}
                         >
                           <IconTrash width={16} height={16} />
                         </button>

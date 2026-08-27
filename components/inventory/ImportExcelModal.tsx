@@ -8,6 +8,7 @@ import { Input, Select, FieldWrapper } from "@/components/ui/Field";
 import { createClient } from "@/lib/supabase/client";
 import { useShop } from "@/components/shop/ShopContext";
 import { useToast } from "@/components/ui/Toaster";
+import { useWriteGuard } from "@/hooks/useWriteGuard";
 import { IconAlertTriangle } from "@/components/ui/Icons";
 import { formatCurrency } from "@/lib/utils";
 
@@ -43,6 +44,7 @@ export function ImportExcelModal({
   const supabase = createClient();
   const { shopId } = useShop();
   const { toast } = useToast();
+  const { readOnly } = useWriteGuard();
 
   const [step, setStep] = useState<Step>("upload");
   const [fileName, setFileName] = useState("");
@@ -141,6 +143,7 @@ export function ImportExcelModal({
   const skippedCount = previewRows.length - validRows.length;
 
   async function handleConfirmImport() {
+    if (readOnly) return;
     const {
       data: { user },
     } = await supabase.auth.getUser();

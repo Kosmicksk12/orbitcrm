@@ -24,11 +24,13 @@ export function OrderPhotos({
   shopId,
   stagedFiles,
   onStagedChange,
+  readOnly = false,
 }: {
   orderId?: string;
   shopId: string;
   stagedFiles?: File[];
   onStagedChange?: (files: File[]) => void;
+  readOnly?: boolean;
 }) {
   const { toast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -138,20 +140,29 @@ export function OrderPhotos({
         <p className="text-sm text-ink-muted dark:text-ink-dark-muted">Cargando…</p>
       ) : (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+          {count === 0 && readOnly && (
+            <p className="col-span-full text-sm text-ink-muted dark:text-ink-dark-muted">
+              Sin fotos.
+            </p>
+          )}
           {staged
             ? (stagedFiles ?? []).map((f, i) => (
-                <Thumb key={`${f.name}-${i}`} src={stagedUrls[i]} onRemove={() => removeStaged(i)} />
+                <Thumb
+                  key={`${f.name}-${i}`}
+                  src={stagedUrls[i]}
+                  onRemove={readOnly ? undefined : () => removeStaged(i)}
+                />
               ))
             : photos.map((p) => (
                 <Thumb
                   key={p.id}
                   src={urls[p.storage_path]}
                   href={urls[p.storage_path]}
-                  onRemove={() => setDeleting(p)}
+                  onRemove={readOnly ? undefined : () => setDeleting(p)}
                 />
               ))}
 
-          {count < MAX_ORDER_PHOTOS && (
+          {!readOnly && count < MAX_ORDER_PHOTOS && (
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
@@ -187,7 +198,7 @@ function Thumb({
 }: {
   src?: string;
   href?: string;
-  onRemove: () => void;
+  onRemove?: () => void;
 }) {
   return (
     <div className="group relative aspect-square overflow-hidden rounded-xl border border-line bg-bg dark:border-line-dark dark:bg-white/5">
@@ -204,14 +215,16 @@ function Thumb({
       ) : (
         <div className="h-full w-full animate-pulse bg-line dark:bg-white/10" />
       )}
-      <button
-        type="button"
-        onClick={onRemove}
-        aria-label="Quitar foto"
-        className="absolute right-1 top-1 rounded-md bg-ink/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
-      >
-        <IconTrash width={13} height={13} />
-      </button>
+      {onRemove && (
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label="Quitar foto"
+          className="absolute right-1 top-1 rounded-md bg-ink/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+        >
+          <IconTrash width={13} height={13} />
+        </button>
+      )}
     </div>
   );
 }

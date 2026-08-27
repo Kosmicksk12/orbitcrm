@@ -11,12 +11,14 @@ import { Skeleton } from "@/components/ui/States";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { IconTrash, IconUsers } from "@/components/ui/Icons";
 import { isValidEmail } from "@/lib/utils";
+import { useWriteGuard } from "@/hooks/useWriteGuard";
 import type { ShopInvite, ShopMember, ShopRole } from "@/lib/types";
 
 export function TeamSettings() {
   const supabase = createClient();
   const { toast } = useToast();
   const { shopId, isAdmin } = useShop();
+  const { readOnly } = useWriteGuard();
 
   const [members, setMembers] = useState<ShopMember[]>([]);
   const [invites, setInvites] = useState<ShopInvite[]>([]);
@@ -78,6 +80,7 @@ export function TeamSettings() {
 
   async function handleInvite(e: FormEvent) {
     e.preventDefault();
+    if (readOnly) return;
     if (!isValidEmail(inviteEmail)) {
       setInviteError("Ingresa un correo válido.");
       return;
@@ -107,6 +110,7 @@ export function TeamSettings() {
   }
 
   async function handleCancelInvite(inviteId: string) {
+    if (readOnly) return;
     const { error } = await supabase.from("shop_invites").delete().eq("id", inviteId);
     if (error) {
       toast({ title: "No se pudo cancelar", description: error.message, variant: "danger" });
@@ -116,6 +120,7 @@ export function TeamSettings() {
   }
 
   async function handleRoleChange(member: ShopMember, role: ShopRole) {
+    if (readOnly) return;
     const previous = members;
     setMembers((prev) => prev.map((m) => (m.user_id === member.user_id ? { ...m, role } : m)));
     const { error } = await supabase
@@ -132,7 +137,7 @@ export function TeamSettings() {
   }
 
   async function handleRemove() {
-    if (!removing) return;
+    if (!removing || readOnly) return;
     const { error } = await supabase
       .from("shop_members")
       .delete()
@@ -191,7 +196,7 @@ export function TeamSettings() {
                       <Select
                         value={m.role}
                         onChange={(e) => handleRoleChange(m, e.target.value as ShopRole)}
-                        disabled={isLastAdmin}
+                        disabled={isLastAdmin || readOnly}
                         className="h-9 w-32 py-1 text-xs"
                         aria-label={`Rol de ${m.full_name || m.email}`}
                       >
@@ -200,7 +205,7 @@ export function TeamSettings() {
                       </Select>
                       <button
                         onClick={() => setRemoving(m)}
-                        disabled={isLastAdmin}
+                        disabled={isLastAdmin || readOnly}
                         aria-label={`Quitar a ${m.full_name || m.email}`}
                         className="rounded-lg p-2 text-ink-muted hover:bg-danger-soft hover:text-danger disabled:hidden dark:hover:bg-danger/10"
                       >
@@ -236,7 +241,8 @@ export function TeamSettings() {
                     </div>
                     <button
                       onClick={() => handleCancelInvite(inv.id)}
-                      className="text-xs font-medium text-danger hover:underline"
+                      disabled={readOnly}
+                      className="text-xs font-medium text-danger hover:underline disabled:opacity-40"
                     >
                       Cancelar
                     </button>
@@ -259,6 +265,7 @@ export function TeamSettings() {
                       onChange={(e) => setInviteEmail(e.target.value)}
                       placeholder="empleado@correo.com"
                       error={!!inviteError}
+                      disabled={readOnly}
                     />
                   </FieldWrapper>
                 </div>
@@ -268,13 +275,14 @@ export function TeamSettings() {
                       id="invite-role"
                       value={inviteRole}
                       onChange={(e) => setInviteRole(e.target.value as ShopRole)}
+                      disabled={readOnly}
                     >
                       <option value="member">Empleado</option>
                       <option value="admin">Admin</option>
                     </Select>
                   </FieldWrapper>
                 </div>
-                <Button type="submit" loading={inviting} className="sm:mb-0.5">
+                <Button type="submit" loading={inviting} disabled={readOnly} className="sm:mb-0.5">
                   Invitar
                 </Button>
               </div>

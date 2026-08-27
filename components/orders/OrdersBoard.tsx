@@ -30,6 +30,7 @@ import { orderWhatsAppMessage } from "@/lib/whatsapp";
 import { uploadOrderPhoto } from "@/lib/orderPhotos";
 import { exportToExcel } from "@/lib/export";
 import { consumePendingSearch } from "@/lib/searchBridge";
+import { useWriteGuard } from "@/hooks/useWriteGuard";
 
 type View = "kanban" | "list";
 type StatusFilter = OrderStatus | "todos";
@@ -47,6 +48,7 @@ export function OrdersBoard() {
   const supabase = createClient();
   const { toast } = useToast();
   const { shopId, isAdmin } = useShop();
+  const { readOnly } = useWriteGuard();
 
   const [orders, setOrders] = useState<ServiceOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -114,6 +116,7 @@ export function OrdersBoard() {
   );
 
   async function handleSubmit(values: OrderFormValues, stagedPhotos: File[]) {
+    if (readOnly) return;
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -178,7 +181,7 @@ export function OrdersBoard() {
   }
 
   async function handleDelete() {
-    if (!deleting) return;
+    if (!deleting || readOnly) return;
     const { error: err } = await supabase
       .from("service_orders")
       .update({ deleted_at: new Date().toISOString() })
@@ -193,6 +196,7 @@ export function OrdersBoard() {
   }
 
   async function moveOrder(orderId: string, status: OrderStatus) {
+    if (readOnly) return;
     const previous = orders;
     const order = orders.find((o) => o.id === orderId);
     // "Pagada" means fully paid by definition — settle the balance
@@ -283,6 +287,7 @@ export function OrdersBoard() {
               <span className="hidden sm:inline">Exportar</span>
             </Button>
             <Button
+              disabled={readOnly}
               onClick={() => {
                 setEditing(null);
                 setDefaultStatus("recibido");
@@ -401,7 +406,7 @@ export function OrdersBoard() {
               title="Aún no tienes órdenes"
               description="Registra el primer equipo que ingresa al taller."
               action={
-                <Button size="sm" onClick={() => setFormOpen(true)}>
+                <Button size="sm" disabled={readOnly} onClick={() => setFormOpen(true)}>
                   <IconPlus width={16} height={16} />
                   Nueva orden
                 </Button>
@@ -466,6 +471,7 @@ export function OrdersBoard() {
                         <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
                           <Select
                             value={o.status}
+                            disabled={readOnly}
                             onChange={(e) => moveOrder(o.id, e.target.value as OrderStatus)}
                             aria-label={`Cambiar estado de ${o.order_number}`}
                             className={cn(
@@ -506,8 +512,10 @@ export function OrdersBoard() {
                                   label: "Mover a papelera",
                                   icon: <IconTrash width={16} height={16} />,
                                   danger: true,
-                                  disabled: !isAdmin,
-                                  disabledReason: "Solo un administrador puede mover órdenes a la papelera",
+                                  disabled: !isAdmin || readOnly,
+                                  disabledReason: readOnly
+                                    ? "Tu prueba terminó — suscríbete para hacer cambios"
+                                    : "Solo un administrador puede mover órdenes a la papelera",
                                   onSelect: () => setDeleting(o),
                                 },
                               ]}
@@ -564,7 +572,7 @@ export function OrdersBoard() {
                       return (
                         <div
                           key={o.id}
-                          draggable
+                          draggable={!readOnly}
                           onDragStart={(e) => e.dataTransfer.setData("text/order-id", o.id)}
                           onClick={() => {
                             setEditing(o);
@@ -604,8 +612,10 @@ export function OrdersBoard() {
                                       label: "Mover a papelera",
                                       icon: <IconTrash width={16} height={16} />,
                                       danger: true,
-                                      disabled: !isAdmin,
-                                      disabledReason: "Solo un administrador puede mover órdenes a la papelera",
+                                      disabled: !isAdmin || readOnly,
+                                      disabledReason: readOnly
+                                        ? "Tu prueba terminó — suscríbete para hacer cambios"
+                                        : "Solo un administrador puede mover órdenes a la papelera",
                                       onSelect: () => setDeleting(o),
                                     },
                                   ]}
@@ -641,12 +651,13 @@ export function OrdersBoard() {
                   </div>
 
                   <button
+                    disabled={readOnly}
                     onClick={() => {
                       setEditing(null);
                       setDefaultStatus(col.id);
                       setFormOpen(true);
                     }}
-                    className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-line py-2.5 text-xs font-medium text-ink-muted hover:border-accent hover:text-accent dark:border-line-dark"
+                    className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-line py-2.5 text-xs font-medium text-ink-muted hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-line disabled:hover:text-ink-muted dark:border-line-dark"
                   >
                     <IconPlus width={14} height={14} />
                     Añadir
@@ -669,6 +680,7 @@ export function OrdersBoard() {
         order={editing}
         defaultStatus={defaultStatus}
         shopId={shopId}
+        readOnly={readOnly}
       />
 
       <ConfirmDialog

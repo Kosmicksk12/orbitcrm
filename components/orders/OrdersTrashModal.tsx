@@ -10,6 +10,7 @@ import { IconRotateLeft, IconTrash } from "@/components/ui/Icons";
 import type { ServiceOrder } from "@/lib/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { deleteAllOrderPhotoFiles } from "@/lib/orderPhotos";
+import { useShop } from "@/components/shop/ShopContext";
 
 /**
  * Órdenes movidas a la papelera (deleted_at no nulo). Se pueden restaurar
@@ -30,6 +31,7 @@ export function OrdersTrashModal({
 }) {
   const supabase = createClient();
   const { toast } = useToast();
+  const { readOnly } = useShop();
 
   const [orders, setOrders] = useState<ServiceOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,6 +55,7 @@ export function OrdersTrashModal({
   }, [open]);
 
   async function handleRestore(order: ServiceOrder) {
+    if (readOnly) return;
     setBusyId(order.id);
     const { error } = await supabase
       .from("service_orders")
@@ -69,7 +72,7 @@ export function OrdersTrashModal({
   }
 
   async function handleDeleteForever() {
-    if (!deletingForever) return;
+    if (!deletingForever || readOnly) return;
     const order = deletingForever;
     setBusyId(order.id);
     // Los metadatos de fotos se van solos por el cascade; los archivos de
@@ -122,7 +125,7 @@ export function OrdersTrashModal({
               <div className="flex shrink-0 items-center gap-1">
                 <button
                   onClick={() => handleRestore(o)}
-                  disabled={busyId === o.id}
+                  disabled={readOnly || busyId === o.id}
                   aria-label={`Restaurar orden ${o.order_number}`}
                   className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-accent hover:bg-accent-50 disabled:opacity-50 dark:hover:bg-accent/10"
                 >
@@ -131,7 +134,7 @@ export function OrdersTrashModal({
                 </button>
                 <button
                   onClick={() => setDeletingForever(o)}
-                  disabled={!isAdmin || busyId === o.id}
+                  disabled={!isAdmin || readOnly || busyId === o.id}
                   aria-label={`Borrar para siempre la orden ${o.order_number}`}
                   title={!isAdmin ? "Solo un administrador puede borrar para siempre" : undefined}
                   className="rounded-lg p-2 text-ink-muted hover:bg-danger-soft hover:text-danger disabled:hidden dark:hover:bg-danger/10"

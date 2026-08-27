@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useShop } from "@/components/shop/ShopContext";
 import { useToast } from "@/components/ui/Toaster";
+import { useWriteGuard } from "@/hooks/useWriteGuard";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Input, Select } from "@/components/ui/Field";
@@ -21,6 +22,7 @@ export function ExpensesPageClient() {
   const supabase = createClient();
   const { toast } = useToast();
   const { shopId, isAdmin } = useShop();
+  const { readOnly } = useWriteGuard();
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,6 +73,7 @@ export function ExpensesPageClient() {
   const totalFiltered = filtered.reduce((sum, e) => sum + e.amount_cents, 0);
 
   async function handleSubmit(values: ExpenseFormValues) {
+    if (readOnly) return;
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -107,7 +110,7 @@ export function ExpensesPageClient() {
   }
 
   async function handleDelete() {
-    if (!deleting) return;
+    if (!deleting || readOnly) return;
     const { error: err } = await supabase
       .from("expenses")
       .update({ deleted_at: new Date().toISOString() })
@@ -152,6 +155,7 @@ export function ExpensesPageClient() {
               <span className="hidden sm:inline">Exportar</span>
             </Button>
             <Button
+              disabled={readOnly}
               onClick={() => {
                 setEditing(null);
                 setFormOpen(true);
@@ -259,7 +263,7 @@ export function ExpensesPageClient() {
                 !category &&
                 !dateFrom &&
                 !dateTo && (
-                  <Button size="sm" onClick={() => setFormOpen(true)}>
+                  <Button size="sm" disabled={readOnly} onClick={() => setFormOpen(true)}>
                     <IconPlus width={16} height={16} />
                     Nuevo gasto
                   </Button>
@@ -297,15 +301,16 @@ export function ExpensesPageClient() {
                             setEditing(e);
                             setFormOpen(true);
                           }}
+                          disabled={readOnly}
                           aria-label={`Editar gasto ${e.description}`}
-                          className="rounded-lg p-2 text-ink-muted hover:bg-black/5 dark:hover:bg-white/10"
+                          className="rounded-lg p-2 text-ink-muted hover:bg-black/5 disabled:hidden dark:hover:bg-white/10"
                         >
                           <IconEdit width={16} height={16} />
                         </button>
                         <button
                           onClick={() => setDeleting(e)}
                           aria-label={`Mover a papelera el gasto ${e.description}`}
-                          disabled={!isAdmin}
+                          disabled={!isAdmin || readOnly}
                           title={!isAdmin ? "Solo un administrador puede mover gastos a la papelera" : undefined}
                           className="rounded-lg p-2 text-ink-muted hover:bg-danger-soft hover:text-danger disabled:hidden dark:hover:bg-danger/10"
                         >

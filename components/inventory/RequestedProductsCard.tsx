@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useShop } from "@/components/shop/ShopContext";
 import { useToast } from "@/components/ui/Toaster";
+import { useWriteGuard } from "@/hooks/useWriteGuard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Field";
 import { Card } from "@/components/ui/Primitives";
@@ -16,6 +17,7 @@ export function RequestedProductsCard() {
   const supabase = createClient();
   const { shopId, isAdmin } = useShop();
   const { toast } = useToast();
+  const { readOnly } = useWriteGuard();
 
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<RequestedProduct[]>([]);
@@ -46,7 +48,7 @@ export function RequestedProductsCard() {
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
-    if (!productName.trim()) return;
+    if (!productName.trim() || readOnly) return;
     setSaving(true);
     const {
       data: { user },
@@ -74,6 +76,7 @@ export function RequestedProductsCard() {
   }
 
   async function markBought(item: RequestedProduct) {
+    if (readOnly) return;
     const { error } = await supabase
       .from("requested_products")
       .update({ status: "comprado" })
@@ -87,7 +90,7 @@ export function RequestedProductsCard() {
   }
 
   async function handleDelete() {
-    if (!deleting) return;
+    if (!deleting || readOnly) return;
     const { error } = await supabase.from("requested_products").delete().eq("id", deleting.id);
     if (error) {
       toast({ title: "No se pudo eliminar", description: error.message, variant: "danger" });
@@ -149,7 +152,12 @@ export function RequestedProductsCard() {
               aria-label="Cliente"
               className="sm:w-48"
             />
-            <Button type="submit" size="md" loading={saving} disabled={!productName.trim()}>
+            <Button
+              type="submit"
+              size="md"
+              loading={saving}
+              disabled={!productName.trim() || readOnly}
+            >
               <IconPlus width={16} height={16} />
               Agregar
             </Button>
@@ -173,14 +181,19 @@ export function RequestedProductsCard() {
                       )}
                     </div>
                     <div className="flex items-center gap-1">
-                      <Button variant="secondary" size="sm" onClick={() => markBought(item)}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        disabled={readOnly}
+                        onClick={() => markBought(item)}
+                      >
                         <IconCheck width={14} height={14} />
                         Ya lo compré
                       </Button>
                       <button
                         onClick={() => setDeleting(item)}
                         aria-label={`Eliminar ${item.product_name}`}
-                        disabled={!isAdmin}
+                        disabled={!isAdmin || readOnly}
                         className="rounded-lg p-2 text-ink-muted hover:bg-danger-soft hover:text-danger dark:hover:bg-danger/10 disabled:hidden"
                       >
                         <IconTrash width={16} height={16} />
@@ -213,7 +226,7 @@ export function RequestedProductsCard() {
                       <button
                         onClick={() => setDeleting(item)}
                         aria-label={`Eliminar ${item.product_name}`}
-                        disabled={!isAdmin}
+                        disabled={!isAdmin || readOnly}
                         className="rounded-lg p-2 text-ink-muted hover:bg-danger-soft hover:text-danger dark:hover:bg-danger/10 disabled:hidden"
                       >
                         <IconTrash width={16} height={16} />

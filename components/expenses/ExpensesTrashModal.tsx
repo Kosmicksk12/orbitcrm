@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/Toaster";
+import { useShop } from "@/components/shop/ShopContext";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Skeleton } from "@/components/ui/States";
@@ -25,6 +26,7 @@ export function ExpensesTrashModal({
 }) {
   const supabase = createClient();
   const { toast } = useToast();
+  const { readOnly } = useShop();
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +50,7 @@ export function ExpensesTrashModal({
   }, [open]);
 
   async function handleRestore(expense: Expense) {
+    if (readOnly) return;
     setBusyId(expense.id);
     const { error } = await supabase.from("expenses").update({ deleted_at: null }).eq("id", expense.id);
     setBusyId(null);
@@ -61,7 +64,7 @@ export function ExpensesTrashModal({
   }
 
   async function handleDeleteForever() {
-    if (!deletingForever) return;
+    if (!deletingForever || readOnly) return;
     const expense = deletingForever;
     setBusyId(expense.id);
     const { error } = await supabase.from("expenses").delete().eq("id", expense.id);
@@ -109,7 +112,7 @@ export function ExpensesTrashModal({
               <div className="flex shrink-0 items-center gap-1">
                 <button
                   onClick={() => handleRestore(e)}
-                  disabled={busyId === e.id}
+                  disabled={readOnly || busyId === e.id}
                   aria-label={`Restaurar gasto ${e.description}`}
                   className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-accent hover:bg-accent-50 disabled:opacity-50 dark:hover:bg-accent/10"
                 >
@@ -118,7 +121,7 @@ export function ExpensesTrashModal({
                 </button>
                 <button
                   onClick={() => setDeletingForever(e)}
-                  disabled={!isAdmin || busyId === e.id}
+                  disabled={!isAdmin || readOnly || busyId === e.id}
                   aria-label={`Borrar para siempre el gasto ${e.description}`}
                   title={!isAdmin ? "Solo un administrador puede borrar para siempre" : undefined}
                   className="rounded-lg p-2 text-ink-muted hover:bg-danger-soft hover:text-danger disabled:hidden dark:hover:bg-danger/10"

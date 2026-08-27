@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ComponentType, SVGProps } from "react";
 import { Logo } from "@/components/ui/Logo";
+import { PLAN, TRIAL_DAYS } from "@/lib/subscription";
 import {
   IconBell,
   IconBox,
@@ -76,51 +77,12 @@ const STEPS: { n: string; title: string; body: string }[] = [
   },
 ];
 
-const PLANS: {
-  name: string;
-  price: string;
-  period: string;
-  tagline: string;
-  features: string[];
-  featured?: boolean;
-}[] = [
-  {
-    name: "Gratis",
-    price: "$0",
-    period: "para siempre",
-    tagline: "Para arrancar y probar con tus órdenes reales.",
-    features: [
-      "1 usuario",
-      "Hasta 30 órdenes al mes",
-      "Inventario y ventas",
-      "Garantía con enlace público",
-    ],
-  },
-  {
-    name: "Taller",
-    price: "$49.900",
-    period: "/ mes",
-    tagline: "Para el taller que ya trabaja todos los días.",
-    features: [
-      "Hasta 5 usuarios",
-      "Órdenes ilimitadas",
-      "Fotos del equipo e historial de WhatsApp",
-      "Gastos, cierre de mes y Excel",
-      "Centro de notificaciones",
-    ],
-    featured: true,
-  },
-  {
-    name: "Cadena",
-    price: "$99.900",
-    period: "/ mes",
-    tagline: "Para varios puntos y equipos grandes.",
-    features: [
-      "Usuarios ilimitados",
-      "Todo lo de Taller",
-      "Soporte prioritario",
-    ],
-  },
+const PLAN_INCLUDES = [
+  "Órdenes, inventario, ventas y gastos sin límite",
+  "Todo tu equipo con roles de admin y empleado",
+  "Fotos del equipo, garantías e historial de WhatsApp",
+  "Notificaciones, cierre de mes y exportación a Excel",
+  "Tus datos siempre disponibles, desde cualquier dispositivo",
 ];
 
 function BrandGlow() {
@@ -245,7 +207,7 @@ export function LandingPage() {
               </a>
             </div>
             <p className="mt-3 text-xs text-ink-muted dark:text-ink-dark-muted">
-              Sin tarjeta de crédito. Listo en minutos.
+              {TRIAL_DAYS} días gratis, sin tarjeta de crédito.
             </p>
           </div>
 
@@ -307,69 +269,53 @@ export function LandingPage() {
       <section id="precios" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-20 sm:px-6">
         <div className="max-w-2xl">
           <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-            Precios simples
+            Un precio, todo incluido
           </h2>
           <p className="mt-3 text-ink-muted dark:text-ink-dark-muted">
-            Empieza gratis y pasa a un plan pago cuando el taller lo pida. Precios en pesos
-            colombianos (COP).
+            Prueba {TRIAL_DAYS} días gratis con acceso completo, sin tarjeta. Después, un solo plan
+            para todo el taller.
           </p>
         </div>
 
-        <div className="mt-10 grid gap-4 lg:grid-cols-3">
-          {PLANS.map((p) => (
-            <div
-              key={p.name}
-              className={
-                "flex flex-col rounded-2xl border bg-surface p-6 dark:bg-surface-dark " +
-                (p.featured
-                  ? "border-accent shadow-raised ring-1 ring-accent/30"
-                  : "border-line shadow-card dark:border-line-dark")
-              }
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="font-display text-lg font-semibold text-ink dark:text-ink-dark">
-                  {p.name}
-                </h3>
-                {p.featured && (
-                  <span className="rounded-full bg-accent-50 px-2.5 py-0.5 text-xs font-semibold text-accent-700 dark:bg-accent/15 dark:text-accent-400">
-                    Más elegido
-                  </span>
-                )}
-              </div>
-              <div className="mt-4 flex items-baseline gap-1.5">
-                <span className="font-display text-3xl font-semibold text-ink dark:text-ink-dark">
-                  {p.price}
-                </span>
-                <span className="text-sm text-ink-muted dark:text-ink-dark-muted">{p.period}</span>
-              </div>
-              <p className="mt-2 text-sm text-ink-muted dark:text-ink-dark-muted">{p.tagline}</p>
-
-              <ul className="mt-5 space-y-2.5">
-                {p.features.map((feat) => (
-                  <li key={feat} className="flex items-start gap-2.5 text-sm">
-                    <IconCheck
-                      width={16}
-                      height={16}
-                      className="mt-0.5 shrink-0 text-success"
-                    />
-                    <span className="text-ink dark:text-ink-dark">{feat}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Link
-                href="/login"
-                className={
-                  "mt-6 inline-flex h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold " +
-                  (p.featured
-                    ? "bg-gradient-to-b from-accent to-accent-600 text-white shadow-button hover:from-accent-600 hover:to-accent-700"
-                    : "border border-line bg-surface text-ink shadow-card hover:bg-bg dark:border-line-dark dark:bg-surface-dark dark:text-ink-dark dark:hover:bg-white/5")
-                }
-              >
-                Empezar
-              </Link>
+        <div className="mt-10 flex justify-center">
+          <div className="w-full max-w-md rounded-2xl border border-accent bg-surface p-6 shadow-raised ring-1 ring-accent/30 dark:bg-surface-dark sm:p-8">
+            <div className="flex items-center justify-between">
+              <h3 className="font-display text-lg font-semibold text-ink dark:text-ink-dark">
+                {PLAN.name}
+              </h3>
+              <span className="rounded-full bg-accent-50 px-2.5 py-0.5 text-xs font-semibold text-accent-700 dark:bg-accent/15 dark:text-accent-400">
+                {TRIAL_DAYS} días gratis
+              </span>
             </div>
-          ))}
+            <div className="mt-4 flex items-baseline gap-1.5">
+              <span className="font-display text-4xl font-semibold text-ink dark:text-ink-dark">
+                {PLAN.priceLabel}
+              </span>
+              <span className="text-sm text-ink-muted dark:text-ink-dark-muted">
+                {PLAN.periodLabel}
+              </span>
+            </div>
+            <p className="mt-2 text-sm text-ink-muted dark:text-ink-dark-muted">{PLAN.currencyNote}</p>
+
+            <ul className="mt-6 space-y-2.5">
+              {PLAN_INCLUDES.map((feat) => (
+                <li key={feat} className="flex items-start gap-2.5 text-sm">
+                  <IconCheck width={16} height={16} className="mt-0.5 shrink-0 text-success" />
+                  <span className="text-ink dark:text-ink-dark">{feat}</span>
+                </li>
+              ))}
+            </ul>
+
+            <Link
+              href="/login"
+              className="mt-7 inline-flex h-11 w-full items-center justify-center rounded-xl bg-gradient-to-b from-accent to-accent-600 px-4 text-sm font-semibold text-white shadow-button hover:from-accent-600 hover:to-accent-700"
+            >
+              Empieza los {TRIAL_DAYS} días gratis
+            </Link>
+            <p className="mt-3 text-center text-xs text-ink-muted dark:text-ink-dark-muted">
+              Al terminar la prueba puedes seguir viendo tus datos aunque no te suscribas.
+            </p>
+          </div>
         </div>
       </section>
 

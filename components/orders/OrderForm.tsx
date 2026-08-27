@@ -47,6 +47,7 @@ export function OrderForm({
   order,
   defaultStatus,
   shopId,
+  readOnly = false,
 }: {
   open: boolean;
   onClose: () => void;
@@ -54,6 +55,7 @@ export function OrderForm({
   order?: ServiceOrder | null;
   defaultStatus?: OrderStatus;
   shopId: string;
+  readOnly?: boolean;
 }) {
   const [values, setValues] = useState<OrderFormValues>(
     order
@@ -300,13 +302,20 @@ export function OrderForm({
           ) : (
             <span />
           )}
-          <div className="flex gap-3">
+          <div className="flex items-center gap-3">
+            {readOnly && (
+              <span className="text-xs text-ink-muted dark:text-ink-dark-muted">
+                Suscríbete para editar
+              </span>
+            )}
             <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
-              Cancelar
+              {readOnly ? "Cerrar" : "Cancelar"}
             </Button>
-            <Button type="submit" loading={loading}>
-              {order ? "Guardar cambios" : "Crear orden"}
-            </Button>
+            {!readOnly && (
+              <Button type="submit" loading={loading}>
+                {order ? "Guardar cambios" : "Crear orden"}
+              </Button>
+            )}
           </div>
         </div>
       </form>
@@ -314,7 +323,7 @@ export function OrderForm({
       {order && (
         <>
           <div className="mt-6 border-t border-line pt-5 dark:border-line-dark">
-            <OrderPhotos orderId={order.id} shopId={order.shop_id} />
+            <OrderPhotos orderId={order.id} shopId={order.shop_id} readOnly={readOnly} />
           </div>
           <div className="mt-6 border-t border-line pt-5 dark:border-line-dark">
             <WhatsAppHistory orderId={order.id} />

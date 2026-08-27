@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useShop } from "@/components/shop/ShopContext";
 import { useToast } from "@/components/ui/Toaster";
+import { useWriteGuard } from "@/hooks/useWriteGuard";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Field";
@@ -29,6 +30,7 @@ export function SalesPageClient() {
   const supabase = createClient();
   const { toast } = useToast();
   const { isAdmin } = useShop();
+  const { readOnly } = useWriteGuard();
 
   const [products, setProducts] = useState<InventoryProduct[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
@@ -161,7 +163,7 @@ export function SalesPageClient() {
   const cartTotal = cart.reduce((sum, l) => sum + l.unitPriceCents * l.quantity, 0);
 
   async function handleCheckout() {
-    if (cart.length === 0) return;
+    if (cart.length === 0 || readOnly) return;
     setSubmitting(true);
 
     const { error: err } = await supabase.rpc("create_sale", {
@@ -192,7 +194,7 @@ export function SalesPageClient() {
   }
 
   async function handleDeleteSale() {
-    if (!deleting) return;
+    if (!deleting || readOnly) return;
     const { error: err } = await supabase.rpc("delete_sale", { p_sale_id: deleting.id });
     if (err) {
       toast({ title: "No se pudo eliminar", description: err.message, variant: "danger" });
@@ -205,7 +207,7 @@ export function SalesPageClient() {
   }
 
   async function handleUpdateSale(payload: EditSalePayload) {
-    if (!editingSale) return;
+    if (!editingSale || readOnly) return;
     const { error: err } = await supabase.rpc("update_sale", {
       p_sale_id: editingSale.id,
       p_client_name: payload.clientName || null,
@@ -408,7 +410,12 @@ export function SalesPageClient() {
                   {formatCurrency(cartTotal)}
                 </span>
               </div>
-              <Button className="mt-3 w-full" onClick={handleCheckout} loading={submitting}>
+              <Button
+                className="mt-3 w-full"
+                onClick={handleCheckout}
+                loading={submitting}
+                disabled={readOnly}
+              >
                 <IconCart width={16} height={16} />
                 Registrar venta
               </Button>
@@ -498,14 +505,15 @@ export function SalesPageClient() {
                       </span>
                       <button
                         onClick={() => setEditingSale(s)}
+                        disabled={readOnly}
                         aria-label="Editar venta"
-                        className="rounded-lg p-1.5 text-ink-muted hover:bg-black/5 dark:hover:bg-white/10"
+                        className="rounded-lg p-1.5 text-ink-muted hover:bg-black/5 disabled:hidden dark:hover:bg-white/10"
                       >
                         <IconEdit width={14} height={14} />
                       </button>
                       <button
                         onClick={() => setDeleting(s)}
-                        disabled={!isAdmin}
+                        disabled={!isAdmin || readOnly}
                         aria-label="Eliminar venta"
                         className="rounded-lg p-1.5 text-ink-muted hover:bg-danger-soft hover:text-danger disabled:hidden dark:hover:bg-danger/10"
                       >
