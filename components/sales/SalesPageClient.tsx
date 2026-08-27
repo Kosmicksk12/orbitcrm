@@ -48,16 +48,27 @@ export function SalesPageClient() {
   const [customCost, setCustomCost] = useState("");
   const [customQty, setCustomQty] = useState("1");
 
+  const [historyFrom, setHistoryFrom] = useState("");
+  const [historyTo, setHistoryTo] = useState("");
+
   async function load() {
     setLoading(true);
     setError(false);
+    const hasDateFilter = historyFrom || historyTo;
+
+    let salesQuery = supabase
+      .from("sales")
+      .select("*, sale_items(*)")
+      .order("created_at", { ascending: false });
+    if (historyFrom) salesQuery = salesQuery.gte("created_at", `${historyFrom}T00:00:00`);
+    if (historyTo) salesQuery = salesQuery.lte("created_at", `${historyTo}T23:59:59`);
+    // Without a date filter, cap to the most recent 50 for a fast default
+    // view; with one, raise the cap since the date range already bounds it.
+    salesQuery = salesQuery.limit(hasDateFilter ? 500 : 50);
+
     const [productsRes, salesRes] = await Promise.all([
       supabase.from("inventory_products").select("*").order("name"),
-      supabase
-        .from("sales")
-        .select("*, sale_items(*)")
-        .order("created_at", { ascending: false })
-        .limit(50),
+      salesQuery,
     ]);
 
     if (!productsRes.error) setProducts((productsRes.data ?? []) as InventoryProduct[]);
@@ -70,7 +81,7 @@ export function SalesPageClient() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [historyFrom, historyTo]);
 
   const q = query.trim().toLowerCase();
   const searchResults = q
@@ -407,9 +418,39 @@ export function SalesPageClient() {
 
         {/* Historial de ventas */}
         <Card className="p-5 lg:col-span-3">
-          <h2 className="font-display text-base font-semibold text-ink dark:text-ink-dark">
-            Historial reciente
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-display text-base font-semibold text-ink dark:text-ink-dark">
+              Historial {historyFrom || historyTo ? "" : "reciente"}
+            </h2>
+            <div className="flex items-center gap-1.5">
+              <Input
+                type="date"
+                value={historyFrom}
+                onChange={(e) => setHistoryFrom(e.target.value)}
+                aria-label="Desde"
+                className="w-[9.5rem] text-xs"
+              />
+              <span className="text-xs text-ink-muted dark:text-ink-dark-muted">–</span>
+              <Input
+                type="date"
+                value={historyTo}
+                onChange={(e) => setHistoryTo(e.target.value)}
+                aria-label="Hasta"
+                className="w-[9.5rem] text-xs"
+              />
+              {(historyFrom || historyTo) && (
+                <button
+                  onClick={() => {
+                    setHistoryFrom("");
+                    setHistoryTo("");
+                  }}
+                  className="text-xs font-medium text-accent hover:underline"
+                >
+                  Limpiar
+                </button>
+              )}
+            </div>
+          </div>
 
           {loading ? (
             <div className="mt-3">
@@ -422,8 +463,12 @@ export function SalesPageClient() {
           ) : sales.length === 0 ? (
             <EmptyState
               icon={<IconCart width={22} height={22} />}
-              title="Sin ventas todavía"
-              description="Registra tu primera venta desde el carrito de la izquierda."
+              title={historyFrom || historyTo ? "Sin ventas en ese rango" : "Sin ventas todavía"}
+              description={
+                historyFrom || historyTo
+                  ? "Prueba con otro rango de fechas."
+                  : "Registra tu primera venta desde el carrito de la izquierda."
+              }
             />
           ) : (
             <ul className="mt-3 divide-y divide-line dark:divide-line-dark">

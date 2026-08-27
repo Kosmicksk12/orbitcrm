@@ -15,6 +15,12 @@ export function ServiceWorkerRegister() {
 
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
+    // Never register in dev: the SW's cache-first strategy for /_next/static/*
+    // serves stale chunks across hot-reloads (dev filenames are stable, so a
+    // cached chunk never gets busted), making local changes look like they
+    // "don't apply" until caches are cleared by hand. Real offline support
+    // only matters for the deployed production build anyway.
+    if (process.env.NODE_ENV !== "production") return;
 
     let registration: ServiceWorkerRegistration | undefined;
 

@@ -217,6 +217,20 @@ export const IconChevronDown = (p: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const IconBell = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <path d="M6 9a6 6 0 0112 0c0 4 1.5 5.5 2 6.5H4c.5-1 2-2.5 2-6.5z" />
+    <path d="M10 19a2 2 0 004 0" />
+  </svg>
+);
+
+export const IconCalendar = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <rect x="3" y="5" width="18" height="16" rx="2" />
+    <path d="M3 10h18M8 3v4M16 3v4" />
+  </svg>
+);
+
 export const IconMoreVertical = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base(p)} fill="currentColor" stroke="none">
     <circle cx="12" cy="5" r="1.6" />

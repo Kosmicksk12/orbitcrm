@@ -26,6 +26,8 @@ export function ExpensesPageClient() {
   const [error, setError] = useState(false);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Expense | null>(null);
@@ -53,9 +55,11 @@ export function ExpensesPageClient() {
     return expenses.filter((e) => {
       const matchesQuery = !q || e.description.toLowerCase().includes(q) || e.category.toLowerCase().includes(q);
       const matchesCategory = !category || e.category === category;
-      return matchesQuery && matchesCategory;
+      const matchesFrom = !dateFrom || e.expense_date >= dateFrom;
+      const matchesTo = !dateTo || e.expense_date <= dateTo;
+      return matchesQuery && matchesCategory && matchesFrom && matchesTo;
     });
-  }, [expenses, query, category]);
+  }, [expenses, query, category, dateFrom, dateTo]);
 
   const monthKey = new Date().toISOString().slice(0, 7);
   const totalThisMonth = expenses
@@ -186,11 +190,39 @@ export function ExpensesPageClient() {
               </option>
             ))}
           </Select>
+          <div className="flex items-center gap-1.5">
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              aria-label="Desde"
+              className="w-[9.5rem] text-xs"
+            />
+            <span className="text-xs text-ink-muted dark:text-ink-dark-muted">–</span>
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              aria-label="Hasta"
+              className="w-[9.5rem] text-xs"
+            />
+          </div>
         </div>
 
-        {(query || category) && (
+        {(query || category || dateFrom || dateTo) && (
           <p className="mt-2 text-xs text-ink-muted dark:text-ink-dark-muted">
             Total filtrado: <span className="font-mono font-medium">{formatCurrency(totalFiltered)}</span>
+            {(dateFrom || dateTo) && (
+              <button
+                onClick={() => {
+                  setDateFrom("");
+                  setDateTo("");
+                }}
+                className="ml-2 font-medium text-accent hover:underline"
+              >
+                Limpiar fechas
+              </button>
+            )}
           </p>
         )}
 
@@ -206,15 +238,17 @@ export function ExpensesPageClient() {
           ) : filtered.length === 0 ? (
             <EmptyState
               icon={<IconReceipt width={22} height={22} />}
-              title={query || category ? "Sin resultados" : "Aún no tienes gastos registrados"}
+              title={query || category || dateFrom || dateTo ? "Sin resultados" : "Aún no tienes gastos registrados"}
               description={
-                query || category
-                  ? "Intenta con otro término o categoría."
+                query || category || dateFrom || dateTo
+                  ? "Intenta con otro término, categoría o rango de fechas."
                   : "Registra tu primera compra o gasto del negocio."
               }
               action={
                 !query &&
-                !category && (
+                !category &&
+                !dateFrom &&
+                !dateTo && (
                   <Button size="sm" onClick={() => setFormOpen(true)}>
                     <IconPlus width={16} height={16} />
                     Nuevo gasto

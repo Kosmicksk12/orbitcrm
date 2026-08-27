@@ -51,6 +51,8 @@ export function OrdersBoard() {
   const [query, setQuery] = useState("");
   const [view, setView] = useState<View>("kanban");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("todos");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ServiceOrder | null>(null);
@@ -82,15 +84,19 @@ export function OrdersBoard() {
 
   const searched = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return orders;
-    return orders.filter(
-      (o) =>
+    return orders.filter((o) => {
+      const matchesQuery =
+        !q ||
         o.client_name.toLowerCase().includes(q) ||
         o.client_phone.includes(q) ||
         o.order_number.toLowerCase().includes(q) ||
-        `${o.device_brand ?? ""} ${o.device_model ?? ""}`.toLowerCase().includes(q)
-    );
-  }, [orders, query]);
+        `${o.device_brand ?? ""} ${o.device_model ?? ""}`.toLowerCase().includes(q);
+      const day = o.created_at.slice(0, 10);
+      const matchesFrom = !dateFrom || day >= dateFrom;
+      const matchesTo = !dateTo || day <= dateTo;
+      return matchesQuery && matchesFrom && matchesTo;
+    });
+  }, [orders, query, dateFrom, dateTo]);
 
   const columns = useMemo(
     () => ORDER_STATUSES.map((s) => ({ ...s, orders: searched.filter((o) => o.status === s.id) })),
@@ -262,19 +268,49 @@ export function OrdersBoard() {
       />
 
       <div className="space-y-3 border-b border-line px-4 py-3 dark:border-line-dark sm:px-6">
-        <div className="relative max-w-sm">
-          <IconSearch
-            width={16}
-            height={16}
-            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-muted"
-          />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar orden, cliente, equipo…"
-            className="pl-9"
-            aria-label="Buscar órdenes"
-          />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="relative max-w-sm flex-1">
+            <IconSearch
+              width={16}
+              height={16}
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-muted"
+            />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar orden, cliente, equipo…"
+              className="pl-9"
+              aria-label="Buscar órdenes"
+            />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              aria-label="Desde"
+              className="w-[9.5rem] text-xs"
+            />
+            <span className="text-xs text-ink-muted dark:text-ink-dark-muted">–</span>
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              aria-label="Hasta"
+              className="w-[9.5rem] text-xs"
+            />
+            {(dateFrom || dateTo) && (
+              <button
+                onClick={() => {
+                  setDateFrom("");
+                  setDateTo("");
+                }}
+                className="text-xs font-medium text-accent hover:underline"
+              >
+                Limpiar
+              </button>
+            )}
+          </div>
         </div>
 
         {view === "list" && (

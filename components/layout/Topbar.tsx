@@ -8,6 +8,7 @@ import { Avatar } from "@/components/ui/Primitives";
 import { Logo } from "@/components/ui/Logo";
 import { IconLogout, IconSettings } from "@/components/ui/Icons";
 import { QuickPartsSearch } from "@/components/inventory/QuickPartsSearch";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 
 export function Topbar({ userEmail, userName }: { userEmail: string; userName: string }) {
   const [open, setOpen] = useState(false);
@@ -51,6 +52,8 @@ export function Topbar({ userEmail, userName }: { userEmail: string; userName: s
         <div className="md:hidden">
           <QuickPartsSearch />
         </div>
+
+        <NotificationBell />
 
         <div className="relative" ref={menuRef}>
           <button
