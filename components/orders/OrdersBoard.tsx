@@ -12,6 +12,7 @@ import { EmptyState, ErrorState, Skeleton, SkeletonRow } from "@/components/ui/S
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { OrderForm, type OrderFormValues } from "./OrderForm";
 import { OrdersTrashModal } from "./OrdersTrashModal";
+import { WhatsAppLink } from "./WhatsAppLink";
 import { ActionMenu } from "@/components/ui/ActionMenu";
 import {
   IconDownload,
@@ -21,11 +22,11 @@ import {
   IconPrinter,
   IconSearch,
   IconTrash,
-  IconWhatsapp,
   IconWrench,
 } from "@/components/ui/Icons";
 import { ORDER_STATUSES, type OrderStatus, type ServiceOrder } from "@/lib/types";
-import { buildWhatsAppLink, cn, formatCurrency, formatDate } from "@/lib/utils";
+import { cn, formatCurrency, formatDate } from "@/lib/utils";
+import { orderWhatsAppMessage } from "@/lib/whatsapp";
 import { exportToExcel } from "@/lib/export";
 import { consumePendingSearch } from "@/lib/searchBridge";
 
@@ -465,22 +466,16 @@ export function OrdersBoard() {
                         </td>
                         <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
                           <div className="flex justify-end gap-1">
-                            <a
-                              href={buildWhatsAppLink(
-                                o.client_phone,
-                                `Hola ${o.client_name}, te escribo por tu orden ${o.order_number}${
-                                  o.device_brand || o.device_model
-                                    ? ` (${[o.device_brand, o.device_model].filter(Boolean).join(" ")})`
-                                    : ""
-                                }.`
-                              )}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              aria-label={`Chatear por WhatsApp con ${o.client_name}`}
+                            <WhatsAppLink
+                              phone={o.client_phone}
+                              clientName={o.client_name}
+                              message={orderWhatsAppMessage(o)}
+                              context="orden"
+                              shopId={o.shop_id}
+                              orderId={o.id}
+                              orderNumber={o.order_number}
                               className="rounded-lg p-2 text-ink-muted hover:bg-accent-50 hover:text-accent dark:hover:bg-accent/10"
-                            >
-                              <IconWhatsapp width={16} height={16} />
-                            </a>
+                            />
                             <ActionMenu
                               label={`Más acciones para ${o.order_number}`}
                               items={[
@@ -566,21 +561,18 @@ export function OrdersBoard() {
                               {o.order_number}
                             </span>
                             <div className="flex shrink-0 items-center gap-0.5 opacity-0 group-hover:opacity-100">
-                              <a
-                                href={buildWhatsAppLink(
-                                  o.client_phone,
-                                  `Hola ${o.client_name}, te escribo por tu orden ${o.order_number}${
-                                    device ? ` (${device})` : ""
-                                  }.`
-                                )}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                              <WhatsAppLink
+                                phone={o.client_phone}
+                                clientName={o.client_name}
+                                message={orderWhatsAppMessage(o)}
+                                context="orden"
+                                shopId={o.shop_id}
+                                orderId={o.id}
+                                orderNumber={o.order_number}
+                                iconSize={14}
                                 onClick={(e) => e.stopPropagation()}
-                                aria-label={`Chatear por WhatsApp con ${o.client_name}`}
                                 className="rounded-md p-1 text-ink-muted hover:bg-accent-50 hover:text-accent dark:hover:bg-accent/10"
-                              >
-                                <IconWhatsapp width={14} height={14} />
-                              </a>
+                              />
                               <div onClick={(e) => e.stopPropagation()}>
                                 <ActionMenu
                                   label={`Más acciones para ${o.order_number}`}

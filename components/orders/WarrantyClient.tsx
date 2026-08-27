@@ -5,9 +5,11 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { ErrorState, Skeleton } from "@/components/ui/States";
-import { IconArrowLeft, IconPrinter, IconShield, IconWhatsapp } from "@/components/ui/Icons";
+import { IconArrowLeft, IconPrinter, IconShield } from "@/components/ui/Icons";
+import { WhatsAppLink } from "@/components/orders/WhatsAppLink";
 import type { ServiceOrder } from "@/lib/types";
-import { buildWhatsAppLink, cn, formatCurrency, formatDate } from "@/lib/utils";
+import { cn, formatCurrency, formatDate } from "@/lib/utils";
+import { warrantyWhatsAppMessage } from "@/lib/whatsapp";
 
 export function WarrantyClient({ orderId }: { orderId: string }) {
   const supabase = createClient();
@@ -65,10 +67,7 @@ export function WarrantyClient({ orderId }: { orderId: string }) {
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
   const publicLink = `${siteUrl}/garantia/${order.id}`;
-  const whatsappLink = buildWhatsAppLink(
-    order.client_phone,
-    `Hola ${order.client_name}, aquí está el comprobante de garantía de tu equipo (${device}): ${publicLink}`
-  );
+  const warrantyMessage = warrantyWhatsAppMessage(order, publicLink);
 
   return (
     <div className="mx-auto max-w-xl p-4 sm:p-6">
@@ -81,15 +80,17 @@ export function WarrantyClient({ orderId }: { orderId: string }) {
           Volver a Órdenes
         </Link>
         <div className="flex items-center gap-2">
-          <a
-            href={whatsappLink}
-            target="_blank"
-            rel="noopener noreferrer"
+          <WhatsAppLink
+            phone={order.client_phone}
+            clientName={order.client_name}
+            message={warrantyMessage}
+            context="garantia"
+            shopId={order.shop_id}
+            orderId={order.id}
+            orderNumber={order.order_number}
+            label="Enviar por WhatsApp"
             className="inline-flex h-10 items-center gap-2 rounded-xl border border-line px-4 text-sm font-medium text-ink hover:bg-bg dark:border-line-dark dark:text-ink-dark dark:hover:bg-white/5"
-          >
-            <IconWhatsapp width={16} height={16} />
-            Enviar por WhatsApp
-          </a>
+          />
           <Button onClick={() => window.print()}>
             <IconPrinter width={16} height={16} />
             Imprimir / Guardar PDF

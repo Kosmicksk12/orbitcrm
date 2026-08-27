@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/Field";
 import { Card, Badge, Avatar } from "@/components/ui/Primitives";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/States";
 import { IconMail, IconPhone, IconSearch, IconUsers, IconWrench } from "@/components/ui/Icons";
+import { WhatsAppHistory } from "@/components/orders/WhatsAppHistory";
 import { ORDER_STATUSES, type ClientSummary, type ServiceOrder } from "@/lib/types";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { consumePendingSearch } from "@/lib/searchBridge";
@@ -291,6 +292,10 @@ export function ClientsPageClient() {
                     );
                   })}
                 </ul>
+              </div>
+
+              <div className="mt-6 border-t border-line pt-5 dark:border-line-dark">
+                <WhatsAppHistory key={selected.client_phone} clientPhone={selected.client_phone} />
               </div>
             </Card>
           )}

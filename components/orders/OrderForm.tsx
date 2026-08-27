@@ -5,6 +5,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea, Select, FieldWrapper } from "@/components/ui/Field";
 import { IconPrinter } from "@/components/ui/Icons";
+import { WhatsAppHistory } from "./WhatsAppHistory";
 import { ORDER_STATUSES, type OrderStatus, type ServiceOrder } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
 
@@ -292,6 +293,12 @@ export function OrderForm({
           </div>
         </div>
       </form>
+
+      {order && (
+        <div className="mt-6 border-t border-line pt-5 dark:border-line-dark">
+          <WhatsAppHistory orderId={order.id} />
+        </div>
+      )}
     </Modal>
   );
 }

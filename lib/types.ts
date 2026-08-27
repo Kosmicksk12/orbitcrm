@@ -114,6 +114,19 @@ export interface Expense {
   updated_at: string;
 }
 
+export interface WhatsAppMessage {
+  id: string;
+  owner_id: string;
+  shop_id: string;
+  order_id: string | null;
+  order_number: string | null;
+  client_name: string;
+  client_phone: string;
+  message: string;
+  context: "orden" | "garantia" | "manual";
+  created_at: string;
+}
+
 export type RequestedProductStatus = "pendiente" | "comprado";
 
 export interface RequestedProduct {
