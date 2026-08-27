@@ -7,6 +7,7 @@ import { IconBox, IconCart, IconDeal, IconReceipt, IconTrendingUp, IconUsers, Ic
 import { ORDER_STATUSES, type Expense, type OrderStatus, type Sale, type ServiceOrder } from "@/lib/types";
 import { cn, formatCurrency, formatRelativeTime } from "@/lib/utils";
 import { MonthCloseExport } from "@/components/dashboard/MonthCloseExport";
+import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
 
 export const metadata = { title: "Panel" };
 
@@ -42,18 +43,41 @@ export default async function DashboardPage(
 ) {
   const searchParams = await props.searchParams;
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const [{ data }, { data: inventory }, { data: salesData }, { data: expensesData }] = await Promise.all([
+  const [
+    { data },
+    { data: inventory },
+    { data: salesData },
+    { data: expensesData },
+    { data: profile },
+    { data: shopRow },
+    { count: memberCount },
+    { count: inviteCount },
+  ] = await Promise.all([
     supabase.from("service_orders").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
     supabase.from("inventory_products").select("stock_qty, low_stock_threshold"),
     supabase.from("sales").select("*").order("created_at", { ascending: false }),
     supabase.from("expenses").select("*").is("deleted_at", null).order("expense_date", { ascending: false }),
+    supabase.from("profiles").select("shop_name").eq("id", user?.id ?? "").maybeSingle(),
+    supabase.from("shops").select("name").maybeSingle(),
+    supabase.from("shop_members").select("user_id", { count: "exact", head: true }),
+    supabase.from("shop_invites").select("id", { count: "exact", head: true }),
   ]);
 
   const sales = (salesData ?? []) as Sale[];
   const expenses = (expensesData ?? []) as Expense[];
   const orders = (data ?? []) as ServiceOrder[];
   const lowStockCount = (inventory ?? []).filter((p) => p.stock_qty <= p.low_stock_threshold).length;
+
+  const onboarding = {
+    named: !!(profile?.shop_name?.trim() || shopRow?.name?.trim()),
+    hasOrder: orders.length > 0,
+    hasProduct: (inventory ?? []).length > 0,
+    hasTeam: (memberCount ?? 1) > 1 || (inviteCount ?? 0) > 0,
+  };
 
   const currentMonthKey = new Date().toISOString().slice(0, 7);
   const requestedMonth = searchParams?.month;
@@ -107,6 +131,13 @@ export default async function DashboardPage(
   return (
     <div>
       <PageHeader title="Panel" description="Un vistazo general a la actividad del taller." />
+
+      <OnboardingChecklist
+        named={onboarding.named}
+        hasOrder={onboarding.hasOrder}
+        hasProduct={onboarding.hasProduct}
+        hasTeam={onboarding.hasTeam}
+      />
 
       <div className="px-4 pt-2 sm:px-6">
         <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-ink-muted dark:text-ink-dark-muted">
