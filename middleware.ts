@@ -6,6 +6,8 @@ const PUBLIC_PATHS = [
   "/login",
   "/forgot-password",
   "/reset-password",
+  "/terminos",
+  "/privacidad",
   "/manifest.webmanifest",
   "/sw.js",
   "/offline.html",
