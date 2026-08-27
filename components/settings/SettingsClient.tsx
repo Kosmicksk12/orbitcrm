@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useShop } from "@/components/shop/ShopContext";
 import { useToast } from "@/components/ui/Toaster";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
@@ -25,6 +26,7 @@ function applyTheme(theme: Theme) {
 
 export function SettingsClient() {
   const supabase = createClient();
+  const { shopId, isAdmin } = useShop();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -45,13 +47,12 @@ export function SettingsClient() {
       } = await supabase.auth.getUser();
       if (!user) return;
       setEmail(user.email ?? "");
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name, shop_name")
-        .eq("id", user.id)
-        .maybeSingle();
+      const [{ data: profile }, { data: shop }] = await Promise.all([
+        supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
+        supabase.from("shops").select("name").eq("id", shopId).maybeSingle(),
+      ]);
       setFullName(profile?.full_name ?? "");
-      setShopName(profile?.shop_name ?? "");
+      setShopName(shop?.name ?? "");
       setLoading(false);
     }
     load();
@@ -74,11 +75,27 @@ export function SettingsClient() {
       setSaving(false);
       return;
     }
-    const { error } = await supabase
+
+    const { error: profileError } = await supabase
       .from("profiles")
-      .update({ full_name: fullName.trim() || null, shop_name: shopName.trim() || null })
+      .update({ full_name: fullName.trim() || null })
       .eq("id", user.id);
+
+    // El nombre del taller vive en shops.name (fuente única): lo leen la
+    // garantía pública y el panel de super-admin. Solo un admin del taller
+    // puede cambiarlo (lo impone RLS), así que ni siquiera intentamos el
+    // update para los demás.
+    let shopError: { message: string } | null = null;
+    if (isAdmin) {
+      const { error } = await supabase
+        .from("shops")
+        .update({ name: shopName.trim() || null })
+        .eq("id", shopId);
+      shopError = error;
+    }
+
     setSaving(false);
+    const error = profileError ?? shopError;
     if (error) {
       toast({ title: "No se pudo guardar", description: error.message, variant: "danger" });
       return;
@@ -117,12 +134,21 @@ export function SettingsClient() {
                   placeholder="Tu nombre"
                 />
               </FieldWrapper>
-              <FieldWrapper label="Nombre del taller" htmlFor="settings-shop" hint="Aparece en el comprobante de garantía impreso.">
+              <FieldWrapper
+                label="Nombre del taller"
+                htmlFor="settings-shop"
+                hint={
+                  isAdmin
+                    ? "Aparece en el comprobante de garantía que ve el cliente y en el panel."
+                    : "Solo un admin del taller puede cambiarlo."
+                }
+              >
                 <Input
                   id="settings-shop"
                   value={shopName}
                   onChange={(e) => setShopName(e.target.value)}
                   placeholder="Fixit Phone"
+                  disabled={!isAdmin}
                 />
               </FieldWrapper>
               <div className="flex justify-end">

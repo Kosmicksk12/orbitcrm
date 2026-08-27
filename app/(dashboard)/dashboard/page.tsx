@@ -43,16 +43,12 @@ export default async function DashboardPage(
 ) {
   const searchParams = await props.searchParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   const [
     { data },
     { data: inventory },
     { data: salesData },
     { data: expensesData },
-    { data: profile },
     { data: shopRow },
     { count: memberCount },
     { count: inviteCount },
@@ -61,7 +57,6 @@ export default async function DashboardPage(
     supabase.from("inventory_products").select("stock_qty, low_stock_threshold"),
     supabase.from("sales").select("*").order("created_at", { ascending: false }),
     supabase.from("expenses").select("*").is("deleted_at", null).order("expense_date", { ascending: false }),
-    supabase.from("profiles").select("shop_name").eq("id", user?.id ?? "").maybeSingle(),
     supabase.from("shops").select("name").maybeSingle(),
     supabase.from("shop_members").select("user_id", { count: "exact", head: true }),
     supabase.from("shop_invites").select("id", { count: "exact", head: true }),
@@ -73,7 +68,7 @@ export default async function DashboardPage(
   const lowStockCount = (inventory ?? []).filter((p) => p.stock_qty <= p.low_stock_threshold).length;
 
   const onboarding = {
-    named: !!(profile?.shop_name?.trim() || shopRow?.name?.trim()),
+    named: !!shopRow?.name?.trim(),
     hasOrder: orders.length > 0,
     hasProduct: (inventory ?? []).length > 0,
     hasTeam: (memberCount ?? 1) > 1 || (inviteCount ?? 0) > 0,

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { useShop } from "@/components/shop/ShopContext";
 import { Button } from "@/components/ui/Button";
 import { ErrorState, Skeleton } from "@/components/ui/States";
 import { IconArrowLeft, IconPrinter, IconShield } from "@/components/ui/Icons";
@@ -14,6 +15,7 @@ import { warrantyWhatsAppMessage } from "@/lib/whatsapp";
 
 export function WarrantyClient({ orderId }: { orderId: string }) {
   const supabase = createClient();
+  const { shopId } = useShop();
   const [order, setOrder] = useState<ServiceOrder | null>(null);
   const [shopName, setShopName] = useState("");
   const [loading, setLoading] = useState(true);
@@ -23,9 +25,12 @@ export function WarrantyClient({ orderId }: { orderId: string }) {
     async function load() {
       setLoading(true);
       setError(false);
-      const [{ data: orderData, error: orderErr }, { data: userRes }] = await Promise.all([
+      // El nombre del taller sale de shops.name — la misma fuente que usa la
+      // garantía pública /garantia/[id] — para que ambos comprobantes digan
+      // exactamente lo mismo.
+      const [{ data: orderData, error: orderErr }, { data: shop }] = await Promise.all([
         supabase.from("service_orders").select("*").eq("id", orderId).is("deleted_at", null).maybeSingle(),
-        supabase.auth.getUser(),
+        supabase.from("shops").select("name").eq("id", shopId).maybeSingle(),
       ]);
       if (orderErr || !orderData) {
         setError(true);
@@ -33,19 +38,12 @@ export function WarrantyClient({ orderId }: { orderId: string }) {
         return;
       }
       setOrder(orderData as ServiceOrder);
-      if (userRes.user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("shop_name")
-          .eq("id", userRes.user.id)
-          .maybeSingle();
-        setShopName(profile?.shop_name ?? "");
-      }
+      setShopName(shop?.name ?? "");
       setLoading(false);
     }
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderId]);
+  }, [orderId, shopId]);
 
   if (loading) {
     return (
