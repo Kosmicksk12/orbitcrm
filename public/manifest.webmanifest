@@ -1,7 +1,7 @@
 {
-  "name": "Danivo CRM — Gestiona tus clientes",
-  "short_name": "Danivo CRM",
-  "description": "CRM ligero para gestionar contactos, empresas y tu pipeline de negocios desde cualquier dispositivo.",
+  "name": "Danivo CRM",
+  "short_name": "Danivo",
+  "description": "El sistema para tu taller de reparación: órdenes de servicio, inventario de repuestos, ventas, gastos y garantías en un solo lugar.",
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",

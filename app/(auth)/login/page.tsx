@@ -87,7 +87,7 @@ function LoginForm() {
         <div className="mb-8 flex flex-col items-center gap-3 text-center">
           <Logo size={44} />
           <div>
-            <h1 className="font-display text-2xl font-semibold text-ink dark:text-ink-dark">
+            <h1 className="font-display text-2xl font-bold tracking-[-0.03em] text-ink dark:text-ink-dark">
               Danivo
             </h1>
             <p className="mt-1 text-sm text-ink-muted dark:text-ink-dark-muted">

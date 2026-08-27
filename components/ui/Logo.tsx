@@ -1,30 +1,30 @@
 import { cn } from "@/lib/utils";
 
 /**
- * The Danivo CRM mark: an elliptical orbit with a core dot (your business)
- * and a satellite dot (a client/contact orbiting it). Rendered as inline
- * SVG so it stays crisp at any size — this is the single source of truth
- * for the brand mark used in the sidebar, topbar and login screen. The
- * PNG icons under public/icons/ mirror this same design for the PWA
- * manifest and favicons.
+ * The Danivo mark: a geometric "D" — the brand initial — in white on the
+ * brand-blue rounded square. The counter of the D is the only negative
+ * space, a quiet nod to "a core held in a frame". Rendered as one inline
+ * SVG so it stays crisp at any size, from a 16px favicon to a 512px app
+ * icon. The PNGs under public/icons/ are generated from this same shape
+ * (see scripts/gen-brand-icons.mjs and design/icon-source.svg).
  */
 export function Logo({ size = 32, className }: { size?: number; className?: string }) {
   return (
-    <div
-      className={cn("flex shrink-0 items-center justify-center rounded-xl bg-accent", className)}
-      style={{ width: size, height: size }}
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      fill="none"
+      className={cn("shrink-0", className)}
+      aria-hidden="true"
     >
-      <svg
-        width={size * 0.62}
-        height={size * 0.62}
-        viewBox="0 0 32 32"
-        fill="none"
-        aria-hidden="true"
-      >
-        <ellipse cx="16" cy="16" rx="10.7" ry="6.5" stroke="white" strokeWidth="1.7" />
-        <circle cx="16" cy="16" r="2.4" fill="white" />
-        <circle cx="24.1" cy="11.4" r="1.5" fill="white" />
-      </svg>
-    </div>
+      <rect width="100" height="100" rx="29" className="fill-accent" />
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        className="fill-white"
+        d="M26 22H46A28 28 0 0 1 46 78H26ZM39 35H46A15.5 15.5 0 0 1 46 65H39Z"
+      />
+    </svg>
   );
 }

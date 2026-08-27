@@ -144,8 +144,8 @@ export function LandingPage() {
       <header className="sticky top-0 z-30 border-b border-line/70 bg-bg/80 backdrop-blur dark:border-line-dark/70 dark:bg-bg-dark/80">
         <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-2.5">
-            <Logo size={32} />
-            <span className="font-display text-lg font-semibold">Danivo</span>
+            <Logo size={30} />
+            <span className="font-display text-lg font-bold tracking-[-0.03em]">Danivo</span>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-3">
             <a
@@ -344,8 +344,8 @@ export function LandingPage() {
       <footer className="border-t border-line bg-surface dark:border-line-dark dark:bg-surface-dark">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div className="flex items-center gap-2.5">
-            <Logo size={28} />
-            <span className="font-display text-base font-semibold">Danivo CRM</span>
+            <Logo size={26} />
+            <span className="font-display text-base font-bold tracking-[-0.03em]">Danivo CRM</span>
           </div>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-muted dark:text-ink-dark-muted">
             <a href="#funciones" className="hover:text-ink dark:hover:text-ink-dark">

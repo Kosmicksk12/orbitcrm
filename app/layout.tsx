@@ -27,11 +27,11 @@ const mono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "Danivo CRM — Gestiona tus clientes",
+    default: "Danivo CRM — El sistema para tu taller de reparación",
     template: "%s · Danivo CRM",
   },
   description:
-    "Danivo CRM es un CRM ligero para gestionar contactos, empresas y tu pipeline de negocios desde cualquier dispositivo.",
+    "Danivo CRM junta las órdenes de reparación, el inventario de repuestos, la caja y las garantías de tu taller en un solo lugar.",
   applicationName: "Danivo CRM",
   manifest: "/manifest.webmanifest",
   appleWebApp: {

@@ -20,8 +20,8 @@ export function LegalDoc({
       <header className="border-b border-line bg-surface dark:border-line-dark dark:bg-surface-dark">
         <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5">
-            <Logo size={30} />
-            <span className="font-display text-lg font-semibold">Danivo</span>
+            <Logo size={28} />
+            <span className="font-display text-lg font-bold tracking-[-0.03em]">Danivo</span>
           </Link>
           <Link
             href="/login"

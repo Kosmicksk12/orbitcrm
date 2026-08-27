@@ -46,8 +46,8 @@ export function Topbar({
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <div className="flex items-center gap-2 md:hidden">
-        <Logo size={32} />
-        <span className="font-display text-base font-semibold text-ink dark:text-ink-dark">
+        <Logo size={30} />
+        <span className="font-display text-lg font-bold tracking-[-0.03em] text-ink dark:text-ink-dark">
           Danivo
         </span>
       </div>

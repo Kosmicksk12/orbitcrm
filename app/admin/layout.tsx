@@ -10,8 +10,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <header className="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur dark:border-line-dark dark:bg-surface-dark/90">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-2.5">
-            <Logo size={30} />
-            <span className="font-display text-lg font-semibold">Danivo · Admin</span>
+            <Logo size={28} />
+            <span className="font-display text-lg font-bold tracking-[-0.03em]">Danivo · Admin</span>
           </div>
           <Link
             href="/dashboard"
