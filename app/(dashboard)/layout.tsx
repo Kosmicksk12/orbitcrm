@@ -17,9 +17,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   if (!user) redirect("/login");
 
-  const [{ data: profile }, { data: membership }] = await Promise.all([
+  const [{ data: profile }, { data: membership }, { data: platformAdmin }] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
     supabase.from("shop_members").select("shop_id, role").eq("user_id", user.id).maybeSingle(),
+    supabase.from("platform_admins").select("user_id").eq("user_id", user.id).maybeSingle(),
   ]);
 
   // Every user should have exactly one shop membership (created by the
@@ -50,7 +51,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <div className="flex min-h-dvh bg-bg dark:bg-bg-dark print:bg-white">
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
-          <Topbar userEmail={user.email ?? ""} userName={profile?.full_name ?? ""} />
+          <Topbar
+            userEmail={user.email ?? ""}
+            userName={profile?.full_name ?? ""}
+            isPlatformAdmin={!!platformAdmin}
+          />
           <TrialBanner />
           <main className="flex-1 pb-20 md:pb-0">{children}</main>
         </div>

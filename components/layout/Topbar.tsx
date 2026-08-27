@@ -6,11 +6,19 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Primitives";
 import { Logo } from "@/components/ui/Logo";
-import { IconLogout, IconSettings } from "@/components/ui/Icons";
+import { IconBuilding, IconLogout, IconSettings } from "@/components/ui/Icons";
 import { QuickPartsSearch } from "@/components/inventory/QuickPartsSearch";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 
-export function Topbar({ userEmail, userName }: { userEmail: string; userName: string }) {
+export function Topbar({
+  userEmail,
+  userName,
+  isPlatformAdmin = false,
+}: {
+  userEmail: string;
+  userName: string;
+  isPlatformAdmin?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -88,6 +96,17 @@ export function Topbar({ userEmail, userName }: { userEmail: string; userName: s
                 <IconSettings width={16} height={16} />
                 Ajustes
               </Link>
+              {isPlatformAdmin && (
+                <Link
+                  href="/admin"
+                  role="menuitem"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-ink hover:bg-bg dark:text-ink-dark dark:hover:bg-white/5"
+                >
+                  <IconBuilding width={16} height={16} />
+                  Panel de administración
+                </Link>
+              )}
               <button
                 role="menuitem"
                 onClick={handleSignOut}
