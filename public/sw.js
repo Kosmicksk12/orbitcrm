@@ -7,15 +7,15 @@
 //    pass straight through to the network — we never cache or intercept
 //    data requests, so the CRM always shows live, correct records.
 
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL_CACHE = `orbitcrm-shell-${VERSION}`;
 const RUNTIME_CACHE = `orbitcrm-runtime-${VERSION}`;
 
 const SHELL_ASSETS = [
   "/offline.html",
   "/manifest.webmanifest",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
+  "/icons/icon-r2-192.png",
+  "/icons/icon-r2-512.png",
 ];
 
 self.addEventListener("install", (event) => {

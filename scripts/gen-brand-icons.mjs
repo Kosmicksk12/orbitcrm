@@ -1,9 +1,16 @@
 // Regenera los PNG e ICO de la marca a partir de design/icon-source.svg y
 // design/icon-maskable-source.svg. Correr con: node scripts/gen-brand-icons.mjs
+//
+// Los archivos de public/icons/ llevan un sufijo de versión (-r2, -r3, ...).
+// Al cambiar la marca hay que subir ese número y actualizar las referencias en
+// public/manifest.webmanifest y app/layout.tsx — así el navegador y el sistema
+// operativo bajan íconos nuevos en vez de servir el viejo desde caché.
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import sharp from "sharp";
+
+const REV = "r2";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const rounded = await readFile(join(root, "design/icon-source.svg"));
@@ -13,13 +20,13 @@ const png = (svg, size) =>
   sharp(svg, { density: 384 }).resize(size, size).png({ compressionLevel: 9 }).toBuffer();
 
 const jobs = [
-  ["public/icons/favicon-16.png", rounded, 16],
-  ["public/icons/favicon-32.png", rounded, 32],
-  ["public/icons/icon-192.png", rounded, 192],
-  ["public/icons/icon-512.png", rounded, 512],
-  ["public/icons/icon-maskable-192.png", square, 192],
-  ["public/icons/icon-maskable-512.png", square, 512],
-  ["public/icons/apple-touch-icon.png", square, 180],
+  [`public/icons/favicon-16.png`, rounded, 16],
+  [`public/icons/favicon-32.png`, rounded, 32],
+  [`public/icons/icon-${REV}-192.png`, rounded, 192],
+  [`public/icons/icon-${REV}-512.png`, rounded, 512],
+  [`public/icons/icon-maskable-${REV}-192.png`, square, 192],
+  [`public/icons/icon-maskable-${REV}-512.png`, square, 512],
+  [`public/icons/apple-touch-icon-${REV}.png`, square, 180],
 ];
 
 for (const [rel, svg, size] of jobs) {
