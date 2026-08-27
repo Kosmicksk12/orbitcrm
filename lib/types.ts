@@ -43,6 +43,7 @@ export interface ServiceOrder {
   cost_cents: number;
   warranty_days: number;
   notes: string | null;
+  deleted_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -108,6 +109,7 @@ export interface Expense {
   description: string;
   amount_cents: number;
   expense_date: string;
+  deleted_at: string | null;
   created_at: string;
   updated_at: string;
 }

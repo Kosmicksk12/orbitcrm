@@ -71,6 +71,7 @@ export function ClientsPageClient() {
     const { data, error: err } = await supabase
       .from("service_orders")
       .select("*")
+      .is("deleted_at", null)
       .order("created_at", { ascending: false });
     if (err) setError(true);
     else setOrders((data ?? []) as ServiceOrder[]);

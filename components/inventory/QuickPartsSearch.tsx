@@ -63,7 +63,7 @@ export function QuickPartsSearch() {
     setLoading(true);
     const [productsRes, ordersRes] = await Promise.all([
       supabase.from("inventory_products").select("*").order("name"),
-      supabase.from("service_orders").select("*").order("created_at", { ascending: false }),
+      supabase.from("service_orders").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
     ]);
     setProducts((productsRes.data ?? []) as InventoryProduct[]);
     setOrders((ordersRes.data ?? []) as ServiceOrder[]);

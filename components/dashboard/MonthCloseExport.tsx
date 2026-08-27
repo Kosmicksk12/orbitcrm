@@ -18,9 +18,9 @@ export function MonthCloseExport({ monthKey, monthLabel }: { monthKey: string; m
     try {
       const [{ data: ordersData, error: ordersErr }, { data: salesData, error: salesErr }, { data: expensesData, error: expensesErr }] =
         await Promise.all([
-          supabase.from("service_orders").select("*"),
+          supabase.from("service_orders").select("*").is("deleted_at", null),
           supabase.from("sales").select("*, sale_items(*)"),
-          supabase.from("expenses").select("*"),
+          supabase.from("expenses").select("*").is("deleted_at", null),
         ]);
 
       if (ordersErr || salesErr || expensesErr) {

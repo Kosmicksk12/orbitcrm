@@ -44,10 +44,10 @@ export default async function DashboardPage(
   const supabase = await createClient();
 
   const [{ data }, { data: inventory }, { data: salesData }, { data: expensesData }] = await Promise.all([
-    supabase.from("service_orders").select("*").order("created_at", { ascending: false }),
+    supabase.from("service_orders").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
     supabase.from("inventory_products").select("stock_qty, low_stock_threshold"),
     supabase.from("sales").select("*").order("created_at", { ascending: false }),
-    supabase.from("expenses").select("*").order("expense_date", { ascending: false }),
+    supabase.from("expenses").select("*").is("deleted_at", null).order("expense_date", { ascending: false }),
   ]);
 
   const sales = (salesData ?? []) as Sale[];

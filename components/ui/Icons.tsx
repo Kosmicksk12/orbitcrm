@@ -231,6 +231,13 @@ export const IconCalendar = (p: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const IconRotateLeft = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <path d="M4 10a8 8 0 1 1 2 6.5" />
+    <path d="M4 4v6h6" />
+  </svg>
+);
+
 export const IconMoreVertical = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base(p)} fill="currentColor" stroke="none">
     <circle cx="12" cy="5" r="1.6" />

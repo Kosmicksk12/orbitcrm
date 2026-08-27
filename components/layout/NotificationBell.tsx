@@ -30,7 +30,8 @@ export function NotificationBell() {
       supabase.from("inventory_products").select("id, stock_qty, low_stock_threshold"),
       supabase
         .from("service_orders")
-        .select("id, total_cents, paid_cents, created_at, warranty_days, status"),
+        .select("id, total_cents, paid_cents, created_at, warranty_days, status")
+        .is("deleted_at", null),
       supabase.from("requested_products").select("id, status").eq("status", "pendiente"),
     ]);
 

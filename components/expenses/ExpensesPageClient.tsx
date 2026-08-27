@@ -11,6 +11,7 @@ import { Card, Badge } from "@/components/ui/Primitives";
 import { EmptyState, ErrorState, SkeletonRow } from "@/components/ui/States";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ExpenseForm, type ExpenseFormValues } from "./ExpenseForm";
+import { ExpensesTrashModal } from "./ExpensesTrashModal";
 import { IconDownload, IconEdit, IconPlus, IconReceipt, IconSearch, IconTrash } from "@/components/ui/Icons";
 import { EXPENSE_CATEGORIES, type Expense } from "@/lib/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -32,6 +33,7 @@ export function ExpensesPageClient() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Expense | null>(null);
   const [deleting, setDeleting] = useState<Expense | null>(null);
+  const [trashOpen, setTrashOpen] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -39,6 +41,7 @@ export function ExpensesPageClient() {
     const { data, error: err } = await supabase
       .from("expenses")
       .select("*")
+      .is("deleted_at", null)
       .order("expense_date", { ascending: false });
     if (err) setError(true);
     else setExpenses((data ?? []) as Expense[]);
@@ -105,11 +108,14 @@ export function ExpensesPageClient() {
 
   async function handleDelete() {
     if (!deleting) return;
-    const { error: err } = await supabase.from("expenses").delete().eq("id", deleting.id);
+    const { error: err } = await supabase
+      .from("expenses")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", deleting.id);
     if (err) {
       toast({ title: "No se pudo eliminar", description: err.message, variant: "danger" });
     } else {
-      toast({ title: "Gasto eliminado", variant: "success" });
+      toast({ title: "Gasto movido a la papelera", variant: "success" });
       setExpenses((prev) => prev.filter((e) => e.id !== deleting.id));
     }
     setDeleting(null);
@@ -137,6 +143,10 @@ export function ExpensesPageClient() {
         description="Compras e insumos del negocio — lo que sale de caja, no lo que entra."
         actions={
           <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={() => setTrashOpen(true)}>
+              <IconTrash width={16} height={16} />
+              <span className="hidden sm:inline">Papelera</span>
+            </Button>
             <Button variant="secondary" onClick={handleExport}>
               <IconDownload width={16} height={16} />
               <span className="hidden sm:inline">Exportar</span>
@@ -294,8 +304,9 @@ export function ExpensesPageClient() {
                         </button>
                         <button
                           onClick={() => setDeleting(e)}
-                          aria-label={`Eliminar gasto ${e.description}`}
+                          aria-label={`Mover a papelera el gasto ${e.description}`}
                           disabled={!isAdmin}
+                          title={!isAdmin ? "Solo un administrador puede mover gastos a la papelera" : undefined}
                           className="rounded-lg p-2 text-ink-muted hover:bg-danger-soft hover:text-danger disabled:hidden dark:hover:bg-danger/10"
                         >
                           <IconTrash width={16} height={16} />
@@ -325,9 +336,16 @@ export function ExpensesPageClient() {
         open={!!deleting}
         onClose={() => setDeleting(null)}
         onConfirm={handleDelete}
-        title="Eliminar gasto"
-        description={`¿Seguro que quieres eliminar "${deleting?.description}"? Esta acción no se puede deshacer.`}
-        confirmLabel="Eliminar"
+        title="Mover a la papelera"
+        description={`¿Mover "${deleting?.description}" a la papelera? Puedes restaurarlo después desde ahí.`}
+        confirmLabel="Mover a papelera"
+      />
+
+      <ExpensesTrashModal
+        open={trashOpen}
+        onClose={() => setTrashOpen(false)}
+        isAdmin={isAdmin}
+        onRestored={load}
       />
     </div>
   );

@@ -11,6 +11,7 @@ import { Card, Badge } from "@/components/ui/Primitives";
 import { EmptyState, ErrorState, Skeleton, SkeletonRow } from "@/components/ui/States";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { OrderForm, type OrderFormValues } from "./OrderForm";
+import { OrdersTrashModal } from "./OrdersTrashModal";
 import { ActionMenu } from "@/components/ui/ActionMenu";
 import {
   IconDownload,
@@ -59,6 +60,7 @@ export function OrdersBoard() {
   const [defaultStatus, setDefaultStatus] = useState<OrderStatus>("recibido");
   const [deleting, setDeleting] = useState<ServiceOrder | null>(null);
   const [dragOverStatus, setDragOverStatus] = useState<OrderStatus | null>(null);
+  const [trashOpen, setTrashOpen] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -66,6 +68,7 @@ export function OrdersBoard() {
     const { data, error: err } = await supabase
       .from("service_orders")
       .select("*")
+      .is("deleted_at", null)
       .order("created_at", { ascending: false });
     if (err) setError(true);
     else setOrders((data ?? []) as ServiceOrder[]);
@@ -157,11 +160,14 @@ export function OrdersBoard() {
 
   async function handleDelete() {
     if (!deleting) return;
-    const { error: err } = await supabase.from("service_orders").delete().eq("id", deleting.id);
+    const { error: err } = await supabase
+      .from("service_orders")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", deleting.id);
     if (err) {
       toast({ title: "No se pudo eliminar", description: err.message, variant: "danger" });
     } else {
-      toast({ title: "Orden eliminada", variant: "success" });
+      toast({ title: "Orden movida a la papelera", variant: "success" });
       setOrders((prev) => prev.filter((o) => o.id !== deleting.id));
     }
     setDeleting(null);
@@ -249,6 +255,10 @@ export function OrdersBoard() {
                 <IconList width={16} height={16} />
               </button>
             </div>
+            <Button variant="secondary" onClick={() => setTrashOpen(true)}>
+              <IconTrash width={16} height={16} />
+              <span className="hidden sm:inline">Papelera</span>
+            </Button>
             <Button variant="secondary" onClick={handleExport}>
               <IconDownload width={16} height={16} />
               <span className="hidden sm:inline">Exportar</span>
@@ -480,11 +490,11 @@ export function OrdersBoard() {
                                   onSelect: () => window.open(`/orders/${o.id}/warranty`, "_blank"),
                                 },
                                 {
-                                  label: "Eliminar orden",
+                                  label: "Mover a papelera",
                                   icon: <IconTrash width={16} height={16} />,
                                   danger: true,
                                   disabled: !isAdmin,
-                                  disabledReason: "Solo un administrador puede eliminar órdenes",
+                                  disabledReason: "Solo un administrador puede mover órdenes a la papelera",
                                   onSelect: () => setDeleting(o),
                                 },
                               ]}
@@ -581,11 +591,11 @@ export function OrdersBoard() {
                                       onSelect: () => window.open(`/orders/${o.id}/warranty`, "_blank"),
                                     },
                                     {
-                                      label: "Eliminar orden",
+                                      label: "Mover a papelera",
                                       icon: <IconTrash width={16} height={16} />,
                                       danger: true,
                                       disabled: !isAdmin,
-                                      disabledReason: "Solo un administrador puede eliminar órdenes",
+                                      disabledReason: "Solo un administrador puede mover órdenes a la papelera",
                                       onSelect: () => setDeleting(o),
                                     },
                                   ]}
@@ -654,9 +664,16 @@ export function OrdersBoard() {
         open={!!deleting}
         onClose={() => setDeleting(null)}
         onConfirm={handleDelete}
-        title="Eliminar orden"
-        description={`¿Seguro que quieres eliminar la orden ${deleting?.order_number}? Esta acción no se puede deshacer.`}
-        confirmLabel="Eliminar"
+        title="Mover a la papelera"
+        description={`¿Mover la orden ${deleting?.order_number} a la papelera? Puedes restaurarla después desde ahí.`}
+        confirmLabel="Mover a papelera"
+      />
+
+      <OrdersTrashModal
+        open={trashOpen}
+        onClose={() => setTrashOpen(false)}
+        isAdmin={isAdmin}
+        onRestored={load}
       />
     </div>
   );

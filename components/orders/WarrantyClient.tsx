@@ -21,7 +21,7 @@ export function WarrantyClient({ orderId }: { orderId: string }) {
       setLoading(true);
       setError(false);
       const [{ data: orderData, error: orderErr }, { data: userRes }] = await Promise.all([
-        supabase.from("service_orders").select("*").eq("id", orderId).maybeSingle(),
+        supabase.from("service_orders").select("*").eq("id", orderId).is("deleted_at", null).maybeSingle(),
         supabase.auth.getUser(),
       ]);
       if (orderErr || !orderData) {
