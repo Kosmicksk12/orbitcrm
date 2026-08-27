@@ -1,77 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useToast } from "@/components/ui/Toaster";
+import { useEffect } from "react";
 
 /**
- * Registers the service worker and watches for new versions. When a new
- * service worker finishes installing (i.e. there's an update waiting), we
- * surface a toast so the user can refresh on their own terms instead of the
- * app silently swapping code under them mid-session.
+ * El service worker offline se desactivó: en la práctica quedaba
+ * "envenenado" tras algunos deploys y servía la página "sin conexión" en
+ * bucle. Ahora este componente solo se asegura de desregistrar cualquier
+ * SW viejo que siga vivo en el navegador del usuario y de limpiar sus
+ * cachés, para que la app cargue siempre directo de la red.
+ *
+ * El propio /sw.js también se autodesregistra (ver public/sw.js), así que
+ * los clientes que ni siquiera pueden abrir la app se recuperan solos en
+ * cuanto el navegador revisa el /sw.js.
  */
 export function ServiceWorkerRegister() {
-  const { toast } = useToast();
-  const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
-
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
-    // Never register in dev: the SW's cache-first strategy for /_next/static/*
-    // serves stale chunks across hot-reloads (dev filenames are stable, so a
-    // cached chunk never gets busted), making local changes look like they
-    // "don't apply" until caches are cleared by hand. Real offline support
-    // only matters for the deployed production build anyway.
-    if (process.env.NODE_ENV !== "production") return;
-
-    let registration: ServiceWorkerRegistration | undefined;
 
     navigator.serviceWorker
-      .register("/sw.js")
-      .then((reg) => {
-        registration = reg;
+      .getRegistrations?.()
+      .then((regs) => regs.forEach((reg) => reg.unregister()))
+      .catch(() => {});
 
-        // A new worker was found — track it until it finishes installing.
-        reg.addEventListener("updatefound", () => {
-          const newWorker = reg.installing;
-          if (!newWorker) return;
-          newWorker.addEventListener("statechange", () => {
-            if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-              setWaitingWorker(newWorker);
-            }
-          });
-        });
-
-        // Check for a new version every time the app regains focus.
-        const onVisible = () => {
-          if (document.visibilityState === "visible") reg.update().catch(() => {});
-        };
-        document.addEventListener("visibilitychange", onVisible);
-        return () => document.removeEventListener("visibilitychange", onVisible);
-      })
-      .catch(() => {
-        // Offline-first is a progressive enhancement — silently no-op if
-        // registration fails (e.g. unsupported browser, dev over http).
-      });
-
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (refreshing) return;
-      refreshing = true;
-      window.location.reload();
-    });
+    if (typeof caches !== "undefined") {
+      caches
+        .keys()
+        .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+        .catch(() => {});
+    }
   }, []);
-
-  useEffect(() => {
-    if (!waitingWorker) return;
-    toast({
-      title: "Nueva versión disponible",
-      description: "Toca para actualizar Danivo CRM ahora.",
-      variant: "default",
-    });
-    // Auto-activate after showing the toast; the controllerchange listener
-    // above reloads the page once the new worker takes control.
-    waitingWorker.postMessage({ type: "SKIP_WAITING" });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [waitingWorker]);
 
   return null;
 }
