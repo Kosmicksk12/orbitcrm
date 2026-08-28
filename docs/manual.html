@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Manual del proyecto — Danivo CRM</title>
+<style>
+  @page { size: A4; margin: 20mm 18mm; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    font-family: "Segoe UI", -apple-system, system-ui, Helvetica, Arial, sans-serif;
+    font-size: 10.5pt; line-height: 1.5; color: #1a2233; margin: 0;
+  }
+  h1, h2, h3, h4 { color: #0f1729; line-height: 1.25; font-weight: 700; }
+  h1 { font-size: 20pt; margin: 0 0 4pt; }
+  h2 { font-size: 15pt; margin: 22pt 0 6pt; padding-bottom: 3pt; border-bottom: 2px solid #2647E0; page-break-after: avoid; }
+  h3 { font-size: 12pt; margin: 14pt 0 4pt; color: #1b37be; page-break-after: avoid; }
+  h4 { font-size: 10.5pt; margin: 10pt 0 3pt; }
+  p { margin: 0 0 6pt; }
+  ul, ol { margin: 0 0 8pt; padding-left: 18pt; }
+  li { margin: 0 0 3pt; }
+  code { font-family: "Consolas", "SF Mono", ui-monospace, monospace; font-size: 9pt; background: #eef1f7; padding: 1px 4px; border-radius: 3px; color: #14204a; }
+  pre { font-family: "Consolas", ui-monospace, monospace; font-size: 8.5pt; background: #0f1729; color: #e6ebff; padding: 9pt 11pt; border-radius: 6px; overflow-x: auto; line-height: 1.45; page-break-inside: avoid; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  table { width: 100%; border-collapse: collapse; margin: 6pt 0 10pt; font-size: 9pt; page-break-inside: avoid; }
+  th, td { border: 1px solid #cdd5e5; padding: 5pt 7pt; text-align: left; vertical-align: top; }
+  th { background: #eef1f7; font-weight: 700; color: #0f1729; }
+  .muted { color: #5b6478; }
+  .tag { display: inline-block; font-size: 8pt; font-weight: 700; padding: 1px 6px; border-radius: 4px; background: #eaf0ff; color: #162c97; }
+  .warn { background: #fef3c7; color: #92500b; }
+  .ok { background: #dcfce7; color: #15803d; }
+  .bad { background: #fee2e2; color: #b91c1c; }
+  .section { page-break-inside: avoid; }
+  .cover { height: 247mm; display: flex; flex-direction: column; justify-content: center; page-break-after: always; }
+  .cover .mark { width: 64px; height: 64px; border-radius: 18px; background: #2647E0; display: flex; align-items: center; justify-content: center; margin-bottom: 18pt; }
+  .cover h1 { font-size: 30pt; margin-bottom: 8pt; }
+  .cover .sub { font-size: 13pt; color: #45506b; }
+  .cover .meta { margin-top: 40pt; font-size: 9.5pt; color: #5b6478; }
+  .toc { page-break-after: always; }
+  .toc li { margin-bottom: 4pt; }
+  .kv { display: grid; grid-template-columns: 40mm 1fr; gap: 2pt 8pt; font-size: 9.5pt; margin: 4pt 0 10pt; }
+  .kv dt { font-weight: 700; color: #0f1729; }
+  .kv dd { margin: 0; }
+  a { color: #1b37be; text-decoration: none; }
+  hr { border: none; border-top: 1px solid #cdd5e5; margin: 14pt 0; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="mark">
+    <svg width="40" height="40" viewBox="0 0 100 100"><path fill-rule="evenodd" fill="#fff" d="M26 22H46A28 28 0 0 1 46 78H26ZM39 35H46A15.5 15.5 0 0 1 46 65H39Z"/></svg>
+  </div>
+  <h1>Manual del proyecto</h1>
+  <div class="sub">Danivo CRM — CRM para talleres de reparación de celulares</div>
+  <div class="meta">
+    Qué se construyó, cómo está organizado el código, qué fallas conocidas tiene y dónde corregirlas.<br>
+    Generado el 27 de agosto de 2026 · para uso interno.
+  </div>
+</div>
+
+<div class="toc">
+  <h2>Índice</h2>
+  <ol>
+    <li>Panorama general</li>
+    <li>Mapa del código</li>
+    <li>Cómo publicar y trabajar en el proyecto</li>
+    <li>Base de datos (Supabase)</li>
+    <li>Funcionalidades — qué hace cada una, sus archivos y sus riesgos</li>
+    <li>Fallas conocidas y dónde corregirlas</li>
+    <li>Pendientes / roadmap</li>
+    <li>Cómo leer el código — patrones que se repiten</li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<h2>1 · Panorama general</h2>
+
+<p><strong>Qué es.</strong> Danivo CRM es una aplicación web para gestionar un taller de reparación de
+celulares y electrónica: órdenes de servicio en un tablero, inventario de repuestos, ventas de
+accesorios, gastos, clientes (ficha automática), garantías con enlace público, y —en la capa
+"vendible como SaaS"— prueba gratis, cobro y un panel para el dueño del producto.</p>
+
+<h3>Stack</h3>
+<dl class="kv">
+  <dt>Framework</dt><dd>Next.js 15 (App Router) + React 19 + TypeScript</dd>
+  <dt>Estilos</dt><dd>Tailwind CSS (tokens en <code>tailwind.config.ts</code>)</dd>
+  <dt>Backend / datos</dt><dd>Supabase — Postgres + Auth + Storage. La seguridad la impone <strong>Row Level Security (RLS)</strong> en la base, no el código.</dd>
+  <dt>Hosting</dt><dd>Vercel (proyecto <code>kosmicksk12s-projects/orbitcrm</code>)</dd>
+  <dt>PWA</dt><dd>Instalable; el service worker offline quedó <strong>desactivado</strong> (ver §5 y §6).</dd>
+</dl>
+
+<h3>Direcciones y cuentas</h3>
+<dl class="kv">
+  <dt>Producción</dt><dd>https://orbitcrm-blond.vercel.app</dd>
+  <dt>Repositorio</dt><dd>GitHub — <code>Kosmicksk12/orbitcrm</code>, rama <code>main</code></dd>
+  <dt>Supabase ref</dt><dd><code>pomelpmdslefqekvkyts</code></dd>
+  <dt>Cuenta dueña / super-admin</dt><dd><code>verdixinsta@gmail.com</code> (sembrada en <code>platform_admins</code>)</dd>
+</dl>
+
+<h3>Cómo funciona el aislamiento entre talleres</h3>
+<p>Cada usuario pertenece a exactamente un <strong>taller</strong> (<code>shops</code>), con rol
+<code>admin</code> o <code>member</code>. Todas las tablas de datos tienen una columna
+<code>shop_id</code> y políticas RLS que solo dejan ver/editar filas del propio taller. Un usuario
+nunca ve datos de otro taller. El "super-admin" (dueño del SaaS) sí ve todo, pero solo a través de
+funciones especiales que chequean <code>is_platform_admin()</code>.</p>
+
+<!-- ============================================================ -->
+<h2>2 · Mapa del código</h2>
+
+<pre><code>app/
+  layout.tsx                 raíz: fuentes, &lt;head&gt;, metadata, ToastProvider
+  page.tsx                   "/" → landing pública (o redirige a /dashboard si hay sesión)
+  (auth)/                    login, forgot-password, reset-password
+  (dashboard)/
+    layout.tsx               valida sesión, arma ShopProvider, Sidebar + Topbar + TrialBanner
+    dashboard/page.tsx       Panel (server component: consulta y calcula todo)
+    orders/  sales/  expenses/  inventory/  clients/  settings/
+    orders/[id]/warranty/    comprobante de garantía interno (para imprimir)
+  admin/                     /admin — panel de super-admin (layout propio, sin sidebar)
+  garantia/[id]/             comprobante de garantía PÚBLICO (lo ve el cliente)
+  terminos/  privacidad/     borradores legales con marcadores [TU NEGOCIO]
+
+components/
+  orders/ sales/ expenses/ inventory/ clients/ settings/ admin/   por dominio
+  marketing/                 LandingPage, LegalDoc
+  layout/                    Sidebar, Topbar, MobileNav, PageHeader, NotificationBell, TrialBanner
+  ui/                        piezas base: Button, Modal, ConfirmDialog, Field, Primitives, Toaster,
+                             Icons, ActionMenu, States, Logo
+  pwa/                       InstallPrompt, ServiceWorkerRegister (hoy solo desregistra el SW viejo)
+  shop/ShopContext.tsx       provee shopId, role, isAdmin, subscription, access, readOnly
+
+lib/
+  supabase/client.ts         cliente para componentes "use client" (navegador)
+  supabase/server.ts         cliente para server components / middleware
+  supabase/env.ts            lee las variables NEXT_PUBLIC_SUPABASE_*
+  types.ts                   interfaces TypeScript de todas las entidades
+  utils.ts                   formatCurrency, formatDate, buildWhatsAppLink, cn, ...
+  subscription.ts            estado de la prueba/suscripción (writable / inTrial / expired)
+  whatsapp.ts                arma y registra los mensajes de WhatsApp
+  orderPhotos.ts             subir / borrar / firmar URLs de las fotos del equipo
+  export.ts                  exportar a Excel
+
+hooks/useWriteGuard.ts       { readOnly, guard } — bloquea acciones si la prueba venció
+middleware.ts                gating de auth en el edge de Vercel
+supabase/*.sql               migraciones (se corren A MANO en el SQL Editor de Supabase)
+scripts/gen-brand-icons.mjs  regenera favicon + PNG de la marca desde design/*.svg
+public/                      assets estáticos, manifest.webmanifest, sw.js (desactivado)</code></pre>
+
+<h3>Rutas de la app</h3>
+<table>
+  <tr><th>Ruta</th><th>Acceso</th><th>Qué es</th></tr>
+  <tr><td><code>/</code></td><td>público</td><td>Landing. Si hay sesión → <code>/dashboard</code>.</td></tr>
+  <tr><td><code>/login</code> <code>/forgot-password</code> <code>/reset-password</code></td><td>público</td><td>Autenticación.</td></tr>
+  <tr><td><code>/terminos</code> <code>/privacidad</code></td><td>público</td><td>Legales (borradores).</td></tr>
+  <tr><td><code>/garantia/[id]</code></td><td>público</td><td>Comprobante de garantía que se comparte con el cliente.</td></tr>
+  <tr><td><code>/dashboard</code> <code>/orders</code> <code>/sales</code> <code>/expenses</code> <code>/inventory</code> <code>/clients</code> <code>/settings</code></td><td>con sesión</td><td>La app del taller.</td></tr>
+  <tr><td><code>/orders/[id]/warranty</code></td><td>con sesión</td><td>Garantía interna, con fotos del equipo, para imprimir.</td></tr>
+  <tr><td><code>/admin</code></td><td>platform admin</td><td>Panel de super-admin. Cualquier otro → 404.</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2>3 · Cómo publicar y trabajar en el proyecto</h2>
+
+<h3>Publicación (autorizada automática, ver <code>CLAUDE.md</code>)</h3>
+<p>El flujo para cada cambio es <strong>verificar → commit → push a <code>main</code> → deploy</strong>.
+Antes de cada push:</p>
+<ol>
+  <li><code>npx tsc --noEmit</code> — debe salir limpio.</li>
+  <li><code>npx next lint</code> — debe salir limpio.</li>
+  <li><code>npx next build</code> — debe compilar sin errores. <strong>Nunca correr <code>next build</code> con <code>next dev</code> activo</strong> — corrompe la carpeta <code>.next</code>.</li>
+  <li>Si algo falla, NO publicar. Arreglar primero.</li>
+  <li>Solo si los tres pasan: <code>git add</code>, <code>git commit</code>, <code>git push origin main</code>, <code>npx vercel --prod</code>.</li>
+  <li>Después del deploy, verificar rápido en https://orbitcrm-blond.vercel.app que no haya errores.</li>
+</ol>
+
+<h3>Correr en local</h3>
+<pre><code>npm install
+npm run dev            # http://localhost:3000  (desarrollo, con hot reload)
+npm run build &amp;&amp; npm start   # simula producción (más fiel)</code></pre>
+<p class="muted">Aviso: <code>next dev</code> a veces no muestra componentes nuevos aunque el código esté bien
+(artefacto del hot reload). Si algo nuevo "no aparece" pero <code>tsc</code> y <code>next build</code>
+pasan, probá contra <code>npm run build &amp;&amp; npm start</code> antes de asumir que hay un bug.</p>
+
+<h3>Migraciones de base de datos</h3>
+<p>El código nunca ejecuta SQL de esquema. El flujo es: escribir el archivo en
+<code>supabase/migration-*.sql</code>, abrir el <strong>SQL Editor de Supabase</strong>, pegar el
+contenido y darle "Run" a mano. Los archivos <code>.sql</code> quedan en el repo solo como respaldo
+y referencia.</p>
+
+<h3>Variables de entorno (<code>.env.local</code> en local, panel de Vercel en prod)</h3>
+<table>
+  <tr><th>Variable</th><th>Para qué</th></tr>
+  <tr><td><code>NEXT_PUBLIC_SUPABASE_URL</code></td><td>URL del proyecto Supabase</td></tr>
+  <tr><td><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> / <code>_PUBLISHABLE_KEY</code></td><td>Llave pública de Supabase (segura de exponer — la seguridad la da RLS)</td></tr>
+  <tr><td><code>NEXT_PUBLIC_SITE_URL</code></td><td>URL base para armar el enlace público de garantía</td></tr>
+  <tr><td><code>NEXT_PUBLIC_BILLING_ENABLED</code></td><td>Prende el cobro con Stripe. Hoy está <strong>sin definir</strong> (= apagado).</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2>4 · Base de datos (Supabase)</h2>
+
+<h3>Tablas y para qué sirven</h3>
+<table>
+  <tr><th>Tabla</th><th>Qué guarda</th></tr>
+  <tr><td><code>profiles</code></td><td>Una fila por usuario (nombre, email, <code>shop_name</code> — este último quedó a medio migrar, ver §6).</td></tr>
+  <tr><td><code>shops</code></td><td>El taller. Nombre y —desde la migración de suscripción— <code>trial_ends_at</code>, <code>subscription_status</code>, <code>stripe_customer_id</code>, <code>stripe_subscription_id</code>.</td></tr>
+  <tr><td><code>shop_members</code></td><td>Qué usuario pertenece a qué taller y con qué rol (<code>admin</code>/<code>member</code>).</td></tr>
+  <tr><td><code>shop_invites</code></td><td>Invitaciones por email pendientes. Al registrarse alguien con ese email, un trigger lo mete al taller.</td></tr>
+  <tr><td><code>service_orders</code></td><td>El corazón: una fila por reparación. <code>status</code>, montos en centavos, garantía en días, <code>deleted_at</code> (papelera).</td></tr>
+  <tr><td><code>inventory_products</code></td><td>Repuestos y accesorios con stock y precios.</td></tr>
+  <tr><td><code>sales</code> / <code>sale_items</code></td><td>Ventas de accesorios (no reparaciones). Descuentan stock vía RPC.</td></tr>
+  <tr><td><code>expenses</code></td><td>Gastos del negocio. Tiene <code>deleted_at</code> (papelera).</td></tr>
+  <tr><td><code>requested_products</code></td><td>Encargos de clientes que no hay en stock.</td></tr>
+  <tr><td><code>whatsapp_messages</code></td><td>Registro (solo-agregar) de cada WhatsApp que se abrió desde la app.</td></tr>
+  <tr><td><code>order_photos</code></td><td>Metadatos de las fotos del equipo. Los archivos viven en Storage, bucket privado <code>order-photos</code>.</td></tr>
+  <tr><td><code>platform_admins</code></td><td>Los dueños del SaaS. Habilita <code>/admin</code>.</td></tr>
+</table>
+
+<h3>Migraciones que hay que tener corridas</h3>
+<p>El esquema base (<code>schema.sql</code>) + estas migraciones, en orden aproximado. Las <span class="tag">nuevas</span>
+son de estas sesiones y hay que confirmarlas en Supabase:</p>
+<table>
+  <tr><th>Archivo</th><th>Qué agrega</th></tr>
+  <tr><td>migration-v1-to-v2 / v2-to-v3-teams</td><td>Evolución vieja: multiusuario y roles por taller.</td></tr>
+  <tr><td>migration-add-inventory / add-sales / sales-custom-items / add-sale-costs</td><td>Inventario y ventas.</td></tr>
+  <tr><td>migration-add-expenses</td><td>Gastos.</td></tr>
+  <tr><td>migration-public-warranty</td><td>RPC <code>get_public_warranty</code>.</td></tr>
+  <tr><td>migration-requested-products</td><td>Encargos.</td></tr>
+  <tr><td>migration-add-soft-delete <span class="tag">nueva</span></td><td><code>deleted_at</code> en <code>service_orders</code> y <code>expenses</code>; redefine <code>get_public_warranty</code> para excluir borrados.</td></tr>
+  <tr><td>migration-add-whatsapp-log <span class="tag">nueva</span></td><td>Tabla <code>whatsapp_messages</code> + RLS.</td></tr>
+  <tr><td>migration-add-order-photos <span class="tag">nueva</span></td><td>Bucket <code>order-photos</code> + policies de <code>storage.objects</code> + tabla <code>order_photos</code>.</td></tr>
+  <tr><td>migration-add-subscription <span class="tag">nueva</span></td><td>Columnas de prueba/suscripción en <code>shops</code>; talleres existentes quedan en <code>active</code>.</td></tr>
+  <tr><td>migration-add-platform-admin <span class="tag">nueva</span></td><td>Tabla <code>platform_admins</code> + funciones <code>is_platform_admin</code>, <code>admin_list_shops</code>, <code>admin_set_shop_subscription</code>. Siembra a <code>verdixinsta@gmail.com</code>.</td></tr>
+  <tr><td>migration-unify-shop-name <span class="tag warn">pendiente</span></td><td>Todavía NO existe en <code>main</code>. Está en la rama <code>claude/angry-kapitsa-c491bd</code>. Ver §6.</td></tr>
+</table>
+
+<h3>Cómo funciona RLS (el modelo de seguridad)</h3>
+<ul>
+  <li><code>user_shop_ids()</code> — función que devuelve el/los <code>shop_id</code> del usuario actual. Casi toda política dice <code>shop_id in (select public.user_shop_ids())</code>.</li>
+  <li><code>is_shop_admin(shop_id)</code> — true si el usuario es admin de ese taller. Las políticas de <code>DELETE</code> suelen exigirlo.</li>
+  <li><code>is_platform_admin()</code> — true si el usuario está en <code>platform_admins</code>. Lo chequean las funciones del panel <code>/admin</code>.</li>
+  <li>Los <code>SELECT</code> casi siempre son abiertos para miembros del taller; <code>INSERT</code>/<code>UPDATE</code> también; <code>DELETE</code> solo admins.</li>
+</ul>
+
+<h3>Funciones RPC (lógica que corre en la base)</h3>
+<table>
+  <tr><th>Función</th><th>Qué hace</th></tr>
+  <tr><td><code>create_sale</code> / <code>update_sale</code> / <code>delete_sale</code></td><td>Registrar/editar/eliminar una venta ajustando el stock en la misma transacción. <code>delete_sale</code> repone el stock.</td></tr>
+  <tr><td><code>get_public_warranty(order_id)</code></td><td>Datos mínimos de una orden para el comprobante público, sin exponer la tabla entera. Excluye órdenes en la papelera.</td></tr>
+  <tr><td><code>is_platform_admin()</code></td><td>Chequeo de super-admin.</td></tr>
+  <tr><td><code>admin_list_shops()</code></td><td>Una fila por taller con métricas (miembros, órdenes, ventas, última orden, email del dueño). Solo platform admins.</td></tr>
+  <tr><td><code>admin_set_shop_subscription(shop_id, status, trial_ends_at?)</code></td><td>Cambiar a mano el estado de un taller (activar, extender prueba, marcar vencida). Útil para activar un taller que pagó por transferencia mientras no haya Stripe.</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2>5 · Funcionalidades — qué hace cada una, sus archivos y sus riesgos</h2>
+
+<div class="section">
+<h3>5.1 Papelera (soft delete) de órdenes y gastos</h3>
+<p><strong>Qué hace.</strong> "Eliminar" no borra: marca la fila con <code>deleted_at</code> y la saca de
+las vistas normales. Desde la papelera se puede restaurar o "borrar para siempre" (solo admins).</p>
+<p><strong>Archivos.</strong> <code>components/orders/OrdersTrashModal.tsx</code>,
+<code>components/expenses/ExpensesTrashModal.tsx</code>; el filtro <code>.is("deleted_at", null)</code>
+está en todas las lecturas (Panel, Clientes, buscador, cierre de mes, notificaciones, garantía).</p>
+<p><strong>Riesgos.</strong> Si en el futuro se agrega una lectura de órdenes o gastos <em>sin</em> el
+filtro <code>.is("deleted_at", null)</code>, van a aparecer filas de la papelera donde no deberían.
+Ventas <strong>no</strong> tiene papelera a propósito (ahí "eliminar" repone stock y mezclar eso con
+restaurar es delicado).</p>
+</div>
+
+<div class="section">
+<h3>5.2 Historial de WhatsApp</h3>
+<p><strong>Qué hace.</strong> Cada vez que se abre WhatsApp desde la app (lista de órdenes, tarjeta
+kanban, comprobante de garantía) se registra el mensaje prellenado en <code>whatsapp_messages</code>.
+Se ve en el modal de la orden y en la ficha de cliente (agrupado por teléfono).</p>
+<p><strong>Archivos.</strong> <code>components/orders/WhatsAppLink.tsx</code> (registra al hacer clic),
+<code>components/orders/WhatsAppHistory.tsx</code> (lista), <code>lib/whatsapp.ts</code>. Tabla
+<code>whatsapp_messages</code>.</p>
+<p><strong>Riesgos.</strong> El registro es "fire and forget": si falla no muestra error. Y solo
+registra que <em>se abrió</em> WhatsApp, no que el cliente lo haya recibido o leído — el texto de la UI
+lo aclara, pero conviene no venderlo como "mensajes enviados".</p>
+</div>
+
+<div class="section">
+<h3>5.3 Fotos del equipo (Supabase Storage)</h3>
+<p><strong>Qué hace.</strong> Evidencia del estado del equipo al recibirlo. Se pueden adjuntar al crear
+la orden (quedan en memoria y se suben después del <em>insert</em>, con el <code>order_id</code> nuevo) o al
+editarla. Se ven en el modal y en la garantía interna; <strong>nunca</strong> en la garantía pública.
+Máx. 12 fotos por orden; se comprimen en el navegador antes de subir.</p>
+<p><strong>Archivos.</strong> <code>components/orders/OrderPhotos.tsx</code>,
+<code>lib/orderPhotos.ts</code>. Bucket privado <code>order-photos</code>, ruta
+<code>{shop_id}/{order_id}/{uuid}</code>. Tabla <code>order_photos</code>. Las miniaturas usan URLs
+firmadas (el bucket es privado).</p>
+<p><strong>Riesgos.</strong> (1) Las policies de <code>storage.objects</code> filtran por el
+<strong>primer segmento de la ruta</strong> (<code>shop_id</code>): si algún código sube con una ruta
+distinta, la subida se rechaza — es la parte más delicada de seguridad. (2) Borrar una orden "para
+siempre" limpia los archivos de Storage (<code>deleteAllOrderPhotoFiles</code> en el trash modal); si
+esa llamada falla quedan archivos huérfanos (costo menor, no seguridad). (3) Las URLs firmadas vencen
+(1 h) — si alguien deja el modal abierto mucho rato, las miniaturas dejan de cargar hasta recargar.</p>
+</div>
+
+<div class="section">
+<h3>5.4 Landing pública + páginas legales</h3>
+<p><strong>Qué hace.</strong> <code>/</code> muestra una landing de marketing para visitantes sin
+sesión. <code>/terminos</code> y <code>/privacidad</code> son borradores con marcadores
+<code>[TU NEGOCIO]</code>, <code>[FECHA]</code>, etc.</p>
+<p><strong>Archivos.</strong> <code>components/marketing/LandingPage.tsx</code>,
+<code>components/marketing/LegalDoc.tsx</code>, <code>app/page.tsx</code>,
+<code>app/terminos/page.tsx</code>, <code>app/privacidad/page.tsx</code>. El
+<code>middleware.ts</code> deja <code>/terminos</code> y <code>/privacidad</code> como rutas públicas.</p>
+<p><strong>Riesgos.</strong> Los legales <strong>tienen que completarse con datos reales</strong> antes
+de cobrarle a nadie — hoy son plantillas. Los precios de la landing son presentacionales (todos los
+botones van a <code>/login</code>).</p>
+</div>
+
+<div class="section">
+<h3>5.5 Prueba de 15 días → modo solo-lectura</h3>
+<p><strong>Qué hace.</strong> Un taller nuevo arranca con 15 días de acceso total
+(<code>subscription_status = 'trialing'</code>, <code>trial_ends_at = now() + 15 días</code>). Al
+vencer, si no hay suscripción activa, pasa a <strong>solo lectura</strong>: pueden entrar y ver todo,
+pero no crear/editar/borrar. Los talleres existentes quedaron en <code>active</code> por la migración.</p>
+<p><strong>Archivos.</strong> <code>lib/subscription.ts</code> (la lógica:
+<code>resolveAccess()</code> → <code>writable</code>/<code>inTrial</code>/<code>expired</code>),
+<code>components/shop/ShopContext.tsx</code> (expone <code>readOnly</code>),
+<code>hooks/useWriteGuard.ts</code>, <code>components/layout/TrialBanner.tsx</code>,
+<code>components/settings/SubscriptionSettings.tsx</code>. El bloqueo está aplicado en órdenes,
+ventas, gastos, inventario, productos solicitados, fotos y gestión de equipo.</p>
+<p><strong>Riesgos importantes.</strong> El bloqueo solo-lectura es <strong>solo del lado del
+cliente</strong> (deshabilita botones y corta los handlers). No hay RLS que lo respalde todavía: un
+usuario técnico con la prueba vencida podría, en teoría, escribir llamando a la API de Supabase
+directo. Es un hueco conocido y aceptable <em>por ahora</em> (no hay clientes externos con prueba
+vencida). Se cierra cuando se conecte Stripe (ver §6 y §7). El <code>ShopProvider</code> hace
+<em>fail open</em>: si la columna no existe o la consulta falla, el taller se trata como
+<code>active</code> — para no bloquear a nadie por un error.</p>
+</div>
+
+<div class="section">
+<h3>5.6 Panel de super-admin (<code>/admin</code>)</h3>
+<p><strong>Qué hace.</strong> Para el dueño del SaaS: ver todos los talleres con su estado de
+prueba/suscripción, contadores (miembros, órdenes, ventas), correo del dueño y última actividad; y
+cambiar el estado de un taller a mano (activar / extender prueba 15 días / marcar vencida).</p>
+<p><strong>Archivos.</strong> <code>app/admin/layout.tsx</code>, <code>app/admin/page.tsx</code>
+(chequea <code>platform_admins</code>; si no, <code>notFound()</code> → 404),
+<code>components/admin/AdminDashboard.tsx</code>. Usa los RPC <code>admin_list_shops</code> y
+<code>admin_set_shop_subscription</code>. El link "Panel de administración" aparece en el menú de
+usuario solo si sos platform admin (el <code>(dashboard)/layout.tsx</code> lo pasa a
+<code>Topbar</code>).</p>
+<p><strong>Riesgos.</strong> Para agregar otro super-admin hay que insertar una fila en
+<code>platform_admins</code> a mano en Supabase (no hay UI). El panel confía en que los RPC hacen el
+chequeo de autorización — si alguien crea un RPC nuevo para el panel, tiene que empezar con
+<code>if not public.is_platform_admin() then raise exception ...</code>.</p>
+</div>
+
+<div class="section">
+<h3>5.7 Guía de primeros pasos (onboarding)</h3>
+<p><strong>Qué hace.</strong> Un taller nuevo ve una tarjeta "Primeros pasos" en el Panel con checklist
+(nombre del taller, primera orden, primer producto, invitar equipo). Desaparece sola cuando los 3
+pasos obligatorios están hechos, o con "Ocultar" (se guarda en <code>localStorage</code> del
+dispositivo).</p>
+<p><strong>Archivos.</strong> <code>components/dashboard/OnboardingChecklist.tsx</code>;
+<code>app/(dashboard)/dashboard/page.tsx</code> calcula el progreso de datos que ya consulta.</p>
+<p><strong>Riesgos.</strong> "Ocultar" es por-dispositivo (no por-cuenta). El check "nombre del taller"
+mira <code>profiles.shop_name</code> <em>o</em> <code>shops.name</code> — se simplifica cuando se
+unifique el nombre (§6).</p>
+</div>
+
+<div class="section">
+<h3>5.8 Rediseño de marca</h3>
+<p><strong>Qué hace.</strong> El logo pasó de la elipse tipo "ojo" a una <strong>"D" geométrica</strong>
+blanca sobre el cuadrado azul <code>#2647E0</code>. Wordmark unificado: Space Grotesk 700 con
+<code>letter-spacing -0.03em</code> en toda la app.</p>
+<p><strong>Archivos.</strong> <code>components/ui/Logo.tsx</code> (un solo <code>&lt;svg&gt;</code>),
+los <code>&lt;span&gt;</code> del wordmark en Sidebar/Topbar/login/landing/legales/admin,
+<code>design/icon-source.svg</code> + <code>design/icon-maskable-source.svg</code>,
+<code>scripts/gen-brand-icons.mjs</code> (regenera <code>favicon.ico</code> y los PNG de
+<code>public/icons/</code>), <code>public/manifest.webmanifest</code>.</p>
+<p><strong>Riesgos.</strong> (1) Los PNG de <code>public/icons/</code> van con caché de un año
+(<code>immutable</code>): para cambiarlos de nuevo hay que <strong>renombrarlos</strong> (por eso llevan
+sufijo <code>-r2</code>) y actualizar el manifest + <code>app/layout.tsx</code>. La constante
+<code>REV</code> en el script controla ese sufijo. (2) Dispositivos con la PWA ya instalada: el ícono
+de la pantalla de inicio no cambia hasta <strong>reinstalar</strong> la PWA (en iOS es obligatorio).
+(3) Las pantallas de arranque <code>public/splash/*</code> todavía tienen la marca vieja (§6).</p>
+</div>
+
+<div class="section">
+<h3>5.9 Endurecimiento del middleware (fix del error 504)</h3>
+<p><strong>Qué hace.</strong> El <code>middleware.ts</code> llamaba a
+<code>supabase.auth.getUser()</code> en cada request sin límite de tiempo propio; una demora de
+Supabase se convertía en <code>504 MIDDLEWARE_INVOCATION_TIMEOUT</code> de Vercel. Ahora: (1)
+<code>Promise.race</code> con timeout de 2,5 s — si no responde, el request pasa sin redirigir (los
+layouts del área privada igual chequean la sesión al renderizar); (2) se saltea Supabase del todo para
+rutas que no lo necesitan (<code>/</code>, legales, <code>/garantia/*</code>, assets).</p>
+<p><strong>Riesgos.</strong> Si el timeout salta, ese request no refresca la cookie de sesión (se
+refresca en el siguiente) y un usuario logueado que caiga en <code>/login</code> justo en ese momento
+ve el login en vez de rebotar al dashboard. Es raro y aceptable.</p>
+</div>
+
+<div class="section">
+<h3>5.10 Service worker desactivado</h3>
+<p><strong>Qué pasó.</strong> Tras un cambio de versión del SW + reinstalación de la PWA, el service
+worker quedaba "envenenado" y servía <code>/offline.html</code> en bucle, dejando la app sin cargar
+aunque el servidor respondiera. Se desactivó: <code>public/sw.js</code> ahora se autodesregistra,
+borra todas las cachés y recarga las pestañas; <code>components/pwa/ServiceWorkerRegister.tsx</code>
+solo desregistra SW viejos.</p>
+<p><strong>Consecuencia.</strong> Se perdió el modo offline. Si se quiere de vuelta, hay que
+reintroducir un SW con <strong>estrategia robusta</strong>: nombres de assets versionados,
+<code>skipWaiting</code> automático, y que un 404 de un chunk no deje una página rota cacheada.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2>6 · Fallas conocidas y dónde corregirlas</h2>
+
+<table>
+  <tr><th>#</th><th>Síntoma</th><th>Causa</th><th>Dónde / cómo corregir</th><th>Gravedad</th></tr>
+
+  <tr>
+    <td>1</td>
+    <td>El comprobante de garantía que ve el cliente dice "Danivo CRM" aunque el taller se puso nombre. En <code>/admin</code> aparece "Sin nombre".</td>
+    <td>Ajustes escribe <code>profiles.shop_name</code>, pero la garantía pública (<code>get_public_warranty</code>) y <code>/admin</code> (<code>admin_list_shops</code>) leen <code>shops.name</code>. Están desincronizados.</td>
+    <td>El fix ya está hecho en el commit <code>eead1da</code> de la rama <code>claude/angry-kapitsa-c491bd</code> (SettingsClient lee/escribe <code>shops.name</code> solo si <code>isAdmin</code>; WarrantyClient lee <code>shops.name</code>; dashboard usa <code>shops.name</code>; migración <code>migration-unify-shop-name.sql</code> rellena la columna). Esa rama es vieja: <strong>cherry-pick solo <code>eead1da</code> sobre <code>main</code> actual</strong>, resolver los conflictos chicos en esos 3 archivos, correr la migración, publicar.</td>
+    <td><span class="tag warn">media</span></td>
+  </tr>
+
+  <tr>
+    <td>2</td>
+    <td>Al abrir la PWA instalada, la pantalla de arranque (splash) tiene la marca vieja.</td>
+    <td>Los 7 PNG de <code>public/splash/</code> son de antes del rediseño.</td>
+    <td>Regenerarlos con la "D" nueva (fondo <code>#F1F3F9</code>, mark centrado) a las dimensiones exactas por dispositivo. Extender <code>scripts/gen-brand-icons.mjs</code> o hacer <code>scripts/gen-splash.mjs</code> con <code>sharp</code>. Las referencias están en <code>app/layout.tsx</code> (<code>&lt;link rel="apple-touch-startup-image"&gt;</code>).</td>
+    <td><span class="tag">baja (cosmético)</span></td>
+  </tr>
+
+  <tr>
+    <td>3</td>
+    <td>Un usuario con la prueba vencida podría escribir datos igual, saltándose la UI.</td>
+    <td>El bloqueo solo-lectura es solo del lado cliente. No hay RLS que lo respalde.</td>
+    <td>Al conectar Stripe: agregar una función <code>shop_is_writable(shop_id)</code> (= <code>subscription_status = 'active'</code> OR prueba vigente) y meterla en las policies de <code>INSERT</code>/<code>UPDATE</code>/<code>DELETE</code> de <code>service_orders</code>, <code>inventory_products</code>, <code>sales</code>, <code>sale_items</code>, <code>expenses</code>, <code>requested_products</code>, <code>order_photos</code>, <code>whatsapp_messages</code>, <code>shop_invites</code>, <code>shop_members</code>; y en los RPC <code>create_sale</code>/<code>update_sale</code>/<code>delete_sale</code>.</td>
+    <td><span class="tag warn">media (hasta que haya clientes reales)</span></td>
+  </tr>
+
+  <tr>
+    <td>4</td>
+    <td>El botón "Suscríbete" solo muestra "los pagos se activan pronto".</td>
+    <td>Stripe no está conectado. El andamiaje está (flag <code>NEXT_PUBLIC_BILLING_ENABLED</code>, columnas <code>stripe_*</code> en <code>shops</code>, el botón).</td>
+    <td>Crear cuenta Stripe → poner las llaves en variables de entorno de Vercel (NUNCA en el repo) → endpoint <code>/api/billing/checkout</code> → webhook que actualiza <code>subscription_status</code> → RLS del punto 3. Mientras tanto, activar talleres a mano desde <code>/admin</code>.</td>
+    <td><span class="tag">pendiente planificado</span></td>
+  </tr>
+
+  <tr>
+    <td>5</td>
+    <td>Las páginas <code>/terminos</code> y <code>/privacidad</code> tienen marcadores como <code>[TU NEGOCIO]</code>.</td>
+    <td>Son borradores a propósito.</td>
+    <td>Reemplazar los marcadores por datos legales reales (razón social, dirección, correo, jurisdicción, proveedor de pagos) en <code>app/terminos/page.tsx</code> y <code>app/privacidad/page.tsx</code> antes de cobrar.</td>
+    <td><span class="tag bad">bloqueante para cobrar</span></td>
+  </tr>
+
+  <tr>
+    <td>6</td>
+    <td><code>npm audit</code> reporta 2 vulnerabilidades.</td>
+    <td>PostCSS interno de Next.js. Riesgo real bajo para esta app.</td>
+    <td>Se resolverían saltando a Next 16 — se decidió NO hacerlo por ahora (salto mayor sin necesidad). Revisar cuando haya otra razón para actualizar.</td>
+    <td><span class="tag">baja</span></td>
+  </tr>
+
+  <tr>
+    <td>7</td>
+    <td>Cambiás un ícono/splash y en producción sigue el viejo.</td>
+    <td><code>next.config.mjs</code> cachea <code>/icons/:path*</code> y <code>/splash/:path*</code> como <code>immutable</code> (un año).</td>
+    <td>Renombrar el archivo (sufijo de versión) y actualizar sus referencias. El script de íconos ya lo hace con la constante <code>REV</code>.</td>
+    <td><span class="tag">baja (operativa)</span></td>
+  </tr>
+
+  <tr>
+    <td>8</td>
+    <td>En <code>next dev</code> un componente nuevo "no aparece" aunque el código esté bien.</td>
+    <td>Artefacto del hot reload / compilación incremental de Next. Pasó varias veces en este proyecto.</td>
+    <td>No es un bug del código. Verificar contra <code>npm run build &amp;&amp; npm start</code>. Si ahí funciona, está bien.</td>
+    <td><span class="tag">no es bug</span></td>
+  </tr>
+
+  <tr>
+    <td>9</td>
+    <td>Los números de orden tienen saltos (ej. FP-000012 no existe).</td>
+    <td>Se crearon órdenes de prueba durante el desarrollo y se borraron; la secuencia <code>service_orders_seq</code> no retrocede.</td>
+    <td>Cosmético, no se toca. Postgres nunca reusa números de secuencia.</td>
+    <td><span class="tag">cosmético</span></td>
+  </tr>
+
+  <tr>
+    <td>10</td>
+    <td>Hay ramas viejas en el repo (<code>claude/adoring-mcclintock-...</code>, <code>upgrade/nextjs-15</code>).</td>
+    <td>Trabajo previo que quedó sin limpiar.</td>
+    <td><strong>No mergear</strong> <code>claude/adoring-mcclintock-*</code> (su diff borra el panel admin, onboarding, legales). Borrarla. <code>upgrade/nextjs-15</code> ya está en <code>main</code> — borrarla. <code>claude/angry-kapitsa-*</code> conservar hasta aplicar el fix del punto 1, después borrarla.</td>
+    <td><span class="tag">higiene</span></td>
+  </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2>7 · Pendientes / roadmap</h2>
+<ul>
+  <li><strong>Conectar Stripe</strong> (checkout + webhook + endurecer el solo-lectura con RLS). Es lo único grande que falta de la fase "SaaS vendible".</li>
+  <li><strong>Unificar <code>shop_name</code></strong> (punto 1 de §6) — chico, ya casi hecho en una rama.</li>
+  <li><strong>Splash screens</strong> con la marca nueva (punto 2 de §6) — cosmético.</li>
+  <li><strong>Completar los legales</strong> con datos reales antes de cobrar.</li>
+  <li>Ideas mencionadas sin compromiso: recordatorios automáticos de garantía/orden lista, firma digital del cliente, reportes comparativos mes a mes, multi-moneda (hoy fijo en COP), reintroducir soporte offline con un SW robusto.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2>8 · Cómo leer el código — patrones que se repiten</h2>
+
+<h3>Server Component vs Client Component</h3>
+<p>Por defecto los archivos de <code>app/</code> son <strong>server components</strong>: corren en el
+servidor, pueden usar <code>await</code> y consultar Supabase con
+<code>lib/supabase/server.ts</code>. Un archivo que empieza con <code>"use client"</code> corre en el
+navegador: puede usar <code>useState</code>, <code>useEffect</code>, eventos, y consulta con
+<code>lib/supabase/client.ts</code>. El Panel (<code>dashboard/page.tsx</code>) es server; casi todo
+lo demás interactivo es un "PageClient".</p>
+
+<h3>El patrón "PageClient"</h3>
+<pre><code>"use client";
+export function OrdersBoard() {
+  const supabase = createClient();
+  const { shopId, isAdmin } = useShop();
+  const { readOnly } = useWriteGuard();
+  const { toast } = useToast();
+  const [orders, setOrders] = useState([]);
+
+  async function load() {                    // consulta y llena el estado
+    const { data } = await supabase.from("service_orders")
+      .select("*").is("deleted_at", null).order("created_at", { ascending: false });
+    setOrders(data ?? []);
+  }
+  useEffect(() =&gt; { load(); }, []);
+
+  async function handleSubmit(values) {      // los handlers escriben y vuelven a load()
+    if (readOnly) return;                    // guard de solo-lectura
+    await supabase.from("service_orders").insert({ ...values, shop_id: shopId });
+    load();
+  }
+}</code></pre>
+
+<h3>Cosas que se repiten</h3>
+<ul>
+  <li><strong>Plata en centavos.</strong> Las columnas terminan en <code>_cents</code> y son enteros. Para mostrar: <code>formatCurrency(cents)</code> de <code>lib/utils.ts</code>.</li>
+  <li><strong>Soft delete.</strong> Toda lectura de órdenes/gastos lleva <code>.is("deleted_at", null)</code>.</li>
+  <li><strong>Contexto del taller.</strong> <code>const { shopId, role, isAdmin, readOnly, access, subscription } = useShop()</code> — disponible en cualquier componente dentro de <code>(dashboard)</code>.</li>
+  <li><strong>Bloqueo de escritura.</strong> <code>const { readOnly } = useWriteGuard()</code>; los handlers empiezan con <code>if (readOnly) return;</code> y los botones llevan <code>disabled={readOnly}</code>.</li>
+  <li><strong>Modales.</strong> <code>&lt;Modal&gt;</code> para formularios; <code>&lt;ConfirmDialog&gt;</code> para confirmar acciones destructivas (nunca <code>window.confirm</code>).</li>
+  <li><strong>Avisos.</strong> <code>const { toast } = useToast(); toast({ title, description, variant })</code> — variantes: <code>"default"</code>, <code>"success"</code>, <code>"danger"</code>.</li>
+  <li><strong>Íconos.</strong> Componentes SVG en <code>components/ui/Icons.tsx</code>: <code>&lt;IconWrench width={16} height={16} /&gt;</code>.</li>
+  <li><strong>Tailwind.</strong> Las clases usan tokens: <code>bg-surface</code>, <code>text-ink</code>, <code>border-line</code>, <code>text-accent</code>, y su par <code>dark:</code>. Definidos en <code>tailwind.config.ts</code>.</li>
+  <li><strong>Tipos.</strong> <code>lib/types.ts</code> tiene la interfaz de cada entidad (<code>ServiceOrder</code>, <code>Sale</code>, <code>Expense</code>, <code>InventoryProduct</code>, <code>WhatsAppMessage</code>, <code>OrderPhoto</code>, ...).</li>
+</ul>
+
+<h3>Para agregar una funcionalidad nueva típica</h3>
+<ol>
+  <li>Si necesita tabla nueva: escribir <code>supabase/migration-*.sql</code> con la tabla, sus índices y las policies RLS (copiar el patrón de <code>migration-requested-products.sql</code>: SELECT/INSERT/UPDATE para miembros, DELETE para admins). Correrla a mano en Supabase.</li>
+  <li>Agregar la interfaz TypeScript en <code>lib/types.ts</code>.</li>
+  <li>Crear el/los componentes en <code>components/&lt;dominio&gt;/</code> siguiendo el patrón PageClient.</li>
+  <li>Si escribe datos, cortar con <code>useWriteGuard()</code> y deshabilitar los botones con <code>readOnly</code>.</li>
+  <li><code>npx tsc --noEmit</code> + <code>npx next lint</code> + <code>npx next build</code> → commit → push → <code>npx vercel --prod</code>.</li>
+</ol>
+
+<hr>
+<p class="muted" style="font-size:8.5pt">Este manual describe el estado del proyecto al 27 de agosto de 2026. El código evoluciona:
+ante la duda, la fuente de verdad es el repo y el historial de <code>git log</code>.</p>
+
+</body>
+</html>
