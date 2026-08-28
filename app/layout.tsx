@@ -78,40 +78,44 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
         {/* iOS splash screens — without these, installed apps show a blank
-            white flash on launch instead of a branded loading screen. */}
+            white flash on launch instead of a branded loading screen.
+            Los nombres llevan sufijo de versión (-r2): /splash/ va con
+            Cache-Control immutable, así que renombrarlos es lo que fuerza a
+            un teléfono ya instalado a bajar la marca nueva. Se regeneran con
+            scripts/gen-splash.mjs. */}
         <link
           rel="apple-touch-startup-image"
-          href="/splash/iphone-15-14-pro-max.png"
+          href="/splash/iphone-15-14-pro-max-r2.png"
           media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
         />
         <link
           rel="apple-touch-startup-image"
-          href="/splash/iphone-15-14-pro.png"
+          href="/splash/iphone-15-14-pro-r2.png"
           media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
         />
         <link
           rel="apple-touch-startup-image"
-          href="/splash/iphone-14-plus-13-pro-max.png"
+          href="/splash/iphone-14-plus-13-pro-max-r2.png"
           media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
         />
         <link
           rel="apple-touch-startup-image"
-          href="/splash/iphone-14-13-12.png"
+          href="/splash/iphone-14-13-12-r2.png"
           media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
         />
         <link
           rel="apple-touch-startup-image"
-          href="/splash/iphone-11-pro-max-xs-max.png"
+          href="/splash/iphone-11-pro-max-xs-max-r2.png"
           media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
         />
         <link
           rel="apple-touch-startup-image"
-          href="/splash/iphone-11-xr.png"
+          href="/splash/iphone-11-xr-r2.png"
           media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
         />
         <link
           rel="apple-touch-startup-image"
-          href="/splash/iphone-se-8-7.png"
+          href="/splash/iphone-se-8-7-r2.png"
           media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
         />
       </head>
