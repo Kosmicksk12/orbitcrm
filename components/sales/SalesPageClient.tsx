@@ -12,8 +12,8 @@ import { Card, Badge } from "@/components/ui/Primitives";
 import { EmptyState, ErrorState, Skeleton, SkeletonRow } from "@/components/ui/States";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { IconBox, IconCart, IconEdit, IconPlus, IconSearch, IconTrash } from "@/components/ui/Icons";
-import type { InventoryProduct, Sale } from "@/lib/types";
-import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { PAYMENT_METHODS, type InventoryProduct, type PaymentMethod, type Sale } from "@/lib/types";
+import { cn, formatCurrency, formatDateTime } from "@/lib/utils";
 import { EditSaleModal, type EditSalePayload } from "./EditSaleModal";
 
 interface CartLine {
@@ -40,6 +40,7 @@ export function SalesPageClient() {
   const [query, setQuery] = useState("");
   const [cart, setCart] = useState<CartLine[]>([]);
   const [clientName, setClientName] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | "">("");
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState<Sale | null>(null);
   const [editingSale, setEditingSale] = useState<Sale | null>(null);
@@ -168,6 +169,7 @@ export function SalesPageClient() {
 
     const { error: err } = await supabase.rpc("create_sale", {
       p_client_name: clientName || null,
+      p_payment_method: paymentMethod || null,
       p_items: cart.map((l) =>
         l.productId
           ? { product_id: l.productId, quantity: l.quantity }
@@ -190,6 +192,7 @@ export function SalesPageClient() {
     toast({ title: "Venta registrada", description: formatCurrency(cartTotal), variant: "success" });
     setCart([]);
     setClientName("");
+    setPaymentMethod("");
     load();
   }
 
@@ -211,6 +214,7 @@ export function SalesPageClient() {
     const { error: err } = await supabase.rpc("update_sale", {
       p_sale_id: editingSale.id,
       p_client_name: payload.clientName || null,
+      p_payment_method: payload.paymentMethod || null,
       p_items: payload.items,
     });
     if (err) {
@@ -404,6 +408,29 @@ export function SalesPageClient() {
                 placeholder="Nombre del cliente (opcional)"
                 className="mt-3"
               />
+              <div className="mt-3">
+                <p className="mb-1.5 text-xs font-medium text-ink-muted dark:text-ink-dark-muted">
+                  Método de pago <span className="font-normal">(opcional)</span>
+                </p>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {PAYMENT_METHODS.map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setPaymentMethod((cur) => (cur === m.id ? "" : m.id))}
+                      aria-pressed={paymentMethod === m.id}
+                      className={cn(
+                        "rounded-xl border px-2 py-2 text-xs font-medium transition-colors",
+                        paymentMethod === m.id
+                          ? "border-accent bg-accent-50 text-accent-700 dark:bg-accent/15 dark:text-accent-400"
+                          : "border-line text-ink-muted hover:bg-bg dark:border-line-dark dark:text-ink-dark-muted dark:hover:bg-white/5"
+                      )}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="mt-3 flex items-center justify-between border-t border-line pt-3 dark:border-line-dark">
                 <span className="text-sm font-medium text-ink dark:text-ink-dark">Total</span>
                 <span className="font-mono text-lg font-semibold text-ink dark:text-ink-dark">
@@ -497,6 +524,9 @@ export function SalesPageClient() {
                       </p>
                       <p className="text-xs text-ink-muted dark:text-ink-dark-muted">
                         {formatDateTime(s.created_at)} · Ganancia {formatCurrency(profit)}
+                        {s.payment_method
+                          ? ` · ${PAYMENT_METHODS.find((m) => m.id === s.payment_method)?.label ?? s.payment_method}`
+                          : ""}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">

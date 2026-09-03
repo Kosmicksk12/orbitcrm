@@ -4,8 +4,8 @@ import { useState, type FormEvent } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input, FieldWrapper } from "@/components/ui/Field";
-import type { Sale } from "@/lib/types";
-import { formatCurrency } from "@/lib/utils";
+import { PAYMENT_METHODS, type Sale } from "@/lib/types";
+import { cn, formatCurrency } from "@/lib/utils";
 
 interface EditableLine {
   id: string;
@@ -17,6 +17,7 @@ interface EditableLine {
 
 export interface EditSalePayload {
   clientName: string;
+  paymentMethod: string;
   items: { id: string; unit_price_cents: number; unit_cost_cents: number }[];
 }
 
@@ -32,6 +33,7 @@ export function EditSaleModal({
   sale: Sale | null;
 }) {
   const [clientName, setClientName] = useState(sale?.client_name ?? "");
+  const [paymentMethod, setPaymentMethod] = useState<string>(sale?.payment_method ?? "");
   const [lines, setLines] = useState<EditableLine[]>(
     (sale?.sale_items ?? []).map((i) => ({
       id: i.id,
@@ -63,6 +65,7 @@ export function EditSaleModal({
     try {
       await onSubmit({
         clientName,
+        paymentMethod,
         items: lines.map((l) => ({
           id: l.id,
           unit_price_cents: Math.round((parseFloat(l.price || "0") || 0) * 100),
@@ -93,6 +96,30 @@ export function EditSaleModal({
             placeholder="Nombre del cliente (opcional)"
           />
         </FieldWrapper>
+
+        <div>
+          <p className="mb-1.5 text-sm font-medium text-ink dark:text-ink-dark">
+            Método de pago <span className="font-normal text-ink-muted dark:text-ink-dark-muted">(opcional)</span>
+          </p>
+          <div className="grid grid-cols-4 gap-1.5">
+            {PAYMENT_METHODS.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setPaymentMethod((cur) => (cur === m.id ? "" : m.id))}
+                aria-pressed={paymentMethod === m.id}
+                className={cn(
+                  "rounded-xl border px-2 py-2 text-xs font-medium transition-colors",
+                  paymentMethod === m.id
+                    ? "border-accent bg-accent-50 text-accent-700 dark:bg-accent/15 dark:text-accent-400"
+                    : "border-line text-ink-muted hover:bg-bg dark:border-line-dark dark:text-ink-dark-muted dark:hover:bg-white/5"
+                )}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="space-y-3">
           {lines.map((l) => (

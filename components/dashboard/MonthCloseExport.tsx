@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toaster";
 import { IconDownload } from "@/components/ui/Icons";
 import { exportWorkbook } from "@/lib/export";
-import type { Expense, Sale, ServiceOrder } from "@/lib/types";
+import { PAYMENT_METHODS, type Expense, type Sale, type ServiceOrder } from "@/lib/types";
 
 export function MonthCloseExport({ monthKey, monthLabel }: { monthKey: string; monthLabel: string }) {
   const supabase = createClient();
@@ -47,6 +47,29 @@ export function MonthCloseExport({ monthKey, monthLabel }: { monthKey: string; m
       const netProfit = repairsProfit + accessoryProfit - expensesTotal;
 
       const toPesos = (cents: number) => Math.round(cents) / 100;
+      const methodLabel = (m: string | null) =>
+        PAYMENT_METHODS.find((x) => x.id === m)?.label ?? "";
+
+      // Cobros por método de pago: reparaciones + accesorios juntos, sobre el
+      // total facturado (misma base que el resto del cierre). Sirve para
+      // cuadrar la caja contra lo que entró a cada billetera / datáfono.
+      const methodTotals = new Map<string, number>();
+      for (const o of orders) {
+        const k = o.payment_method ?? "sin";
+        methodTotals.set(k, (methodTotals.get(k) ?? 0) + o.total_cents);
+      }
+      for (const s of sales) {
+        const k = s.payment_method ?? "sin";
+        methodTotals.set(k, (methodTotals.get(k) ?? 0) + s.total_cents);
+      }
+      const methodRows = [
+        ...PAYMENT_METHODS.map((m) => ({
+          "Método de pago": m.label,
+          Total: toPesos(methodTotals.get(m.id) ?? 0),
+        })),
+        { "Método de pago": "Sin registrar", Total: toPesos(methodTotals.get("sin") ?? 0) },
+        { "Método de pago": "TOTAL", Total: toPesos(repairsSales + accessorySales) },
+      ];
 
       const summaryRows = [
         { Concepto: "Ventas por reparaciones", Valor: toPesos(repairsSales) },
@@ -66,6 +89,7 @@ export function MonthCloseExport({ monthKey, monthLabel }: { monthKey: string; m
         Total: toPesos(o.total_cents),
         Costo: toPesos(o.cost_cents),
         Ganancia: toPesos(o.total_cents - o.cost_cents),
+        "Método de pago": methodLabel(o.payment_method),
         Fecha: o.created_at.slice(0, 10),
       }));
 
@@ -78,6 +102,7 @@ export function MonthCloseExport({ monthKey, monthLabel }: { monthKey: string; m
           Total: toPesos(s.total_cents),
           Costo: toPesos(cost),
           Ganancia: toPesos(s.total_cents - cost),
+          "Método de pago": methodLabel(s.payment_method),
           Fecha: s.created_at.slice(0, 10),
         };
       });
@@ -91,6 +116,7 @@ export function MonthCloseExport({ monthKey, monthLabel }: { monthKey: string; m
 
       exportWorkbook(`cierre-de-mes-${monthKey}`, [
         { name: "Resumen", rows: summaryRows },
+        { name: "Por método de pago", rows: methodRows },
         { name: "Reparaciones", rows: repairRows },
         { name: "Ventas accesorios", rows: saleRows },
         { name: "Gastos", rows: expenseRows },

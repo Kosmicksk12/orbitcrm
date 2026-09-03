@@ -8,6 +8,15 @@ export type OrderStatus =
 
 export type ShopRole = "admin" | "member";
 
+export type PaymentMethod = "efectivo" | "nequi" | "daviplata" | "bold";
+
+export const PAYMENT_METHODS: { id: PaymentMethod; label: string }[] = [
+  { id: "efectivo", label: "Efectivo" },
+  { id: "nequi", label: "Nequi" },
+  { id: "daviplata", label: "Daviplata" },
+  { id: "bold", label: "Bold" },
+];
+
 export interface ShopMember {
   shop_id: string;
   user_id: string;
@@ -41,6 +50,7 @@ export interface ServiceOrder {
   total_cents: number;
   paid_cents: number;
   cost_cents: number;
+  payment_method: PaymentMethod | null;
   warranty_days: number;
   notes: string | null;
   deleted_at: string | null;
@@ -97,6 +107,7 @@ export interface Sale {
   shop_id: string;
   client_name: string | null;
   total_cents: number;
+  payment_method: PaymentMethod | null;
   created_at: string;
   sale_items?: SaleItem[];
 }

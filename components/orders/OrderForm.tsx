@@ -7,7 +7,7 @@ import { Input, Textarea, Select, FieldWrapper } from "@/components/ui/Field";
 import { IconPrinter } from "@/components/ui/Icons";
 import { WhatsAppHistory } from "./WhatsAppHistory";
 import { OrderPhotos } from "./OrderPhotos";
-import { ORDER_STATUSES, type OrderStatus, type ServiceOrder } from "@/lib/types";
+import { ORDER_STATUSES, PAYMENT_METHODS, type OrderStatus, type ServiceOrder } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
 
 export interface OrderFormValues {
@@ -21,6 +21,7 @@ export interface OrderFormValues {
   total: string;
   paid: string;
   cost: string;
+  payment_method: string;
   warranty_days: string;
   notes: string;
 }
@@ -36,6 +37,7 @@ const EMPTY: OrderFormValues = {
   total: "",
   paid: "",
   cost: "",
+  payment_method: "",
   warranty_days: "90",
   notes: "",
 };
@@ -70,6 +72,7 @@ export function OrderForm({
           total: (order.total_cents / 100).toString(),
           paid: (order.paid_cents / 100).toString(),
           cost: (order.cost_cents / 100).toString(),
+          payment_method: order.payment_method ?? "",
           warranty_days: order.warranty_days.toString(),
           notes: order.notes ?? "",
         }
@@ -252,6 +255,25 @@ export function OrderForm({
               />
             </FieldWrapper>
           </div>
+
+          <FieldWrapper
+            label="Método de pago"
+            htmlFor="payment_method"
+            hint="Cómo pagó el cliente. Opcional — puedes dejarlo para cuando pague."
+          >
+            <Select
+              id="payment_method"
+              value={values.payment_method}
+              onChange={(e) => update("payment_method", e.target.value)}
+            >
+              <option value="">— Sin registrar —</option>
+              {PAYMENT_METHODS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </Select>
+          </FieldWrapper>
 
           {(parseFloat(values.total || "0") > 0 || parseFloat(values.cost || "0") > 0) && (
             <div className="flex items-center justify-between rounded-xl bg-success-soft px-4 py-3 text-sm dark:bg-success/10">

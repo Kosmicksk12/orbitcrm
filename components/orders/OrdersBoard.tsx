@@ -24,7 +24,7 @@ import {
   IconTrash,
   IconWrench,
 } from "@/components/ui/Icons";
-import { ORDER_STATUSES, type OrderStatus, type ServiceOrder } from "@/lib/types";
+import { ORDER_STATUSES, PAYMENT_METHODS, type OrderStatus, type ServiceOrder } from "@/lib/types";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { orderWhatsAppMessage } from "@/lib/whatsapp";
 import { uploadOrderPhoto } from "@/lib/orderPhotos";
@@ -136,6 +136,7 @@ export function OrdersBoard() {
           ? Math.round((parseFloat(values.total || "0") || 0) * 100)
           : Math.round((parseFloat(values.paid || "0") || 0) * 100),
       cost_cents: Math.round((parseFloat(values.cost || "0") || 0) * 100),
+      payment_method: values.payment_method || null,
       warranty_days: parseInt(values.warranty_days || "0", 10) || 0,
       notes: values.notes.trim() || null,
     };
@@ -230,6 +231,7 @@ export function OrdersBoard() {
       Ganancia: (o.total_cents - o.cost_cents) / 100,
       Abonado: o.paid_cents / 100,
       Saldo: (o.total_cents - o.paid_cents) / 100,
+      "Método de pago": PAYMENT_METHODS.find((m) => m.id === o.payment_method)?.label ?? "",
       "Garantía (días)": o.warranty_days,
       Fecha: formatDate(o.created_at),
     }));
